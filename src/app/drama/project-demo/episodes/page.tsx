@@ -1,40 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import {
   AppShell,
   AssetPlaceholder,
   Badge,
+  DraftStatus,
   PageHeader,
   Panel,
 } from "@/components/workspace";
-import mockProject from "@/data/mock-project.json";
-import type { AiGenerationResult, Episode } from "@/types/project";
-
-const data = mockProject as AiGenerationResult;
+import { useProjectStore } from "@/hooks/useProjectStore";
+import type { Episode } from "@/types/project";
 
 export default function EpisodesPage() {
-  const [episodes, setEpisodes] = useState(
-    data.episodes.map((episode) => ({
-      ...episode,
-      status: episode.status ?? "待生成分镜",
-    })),
-  );
+  const {
+    project,
+    saveStatus,
+    updateEpisode,
+    setEpisodeStatus,
+    resetProject,
+  } = useProjectStore();
+  const episodes = project.episodes.map((episode) => ({
+    ...episode,
+    status: episode.status ?? "待生成分镜",
+  }));
 
   function generateStoryboard(episodeId: string) {
-    setEpisodes((current) =>
-      current.map((episode) =>
-        episode.id === episodeId ? { ...episode, status: "分镜生成中" } : episode,
-      ),
-    );
+    setEpisodeStatus(episodeId, "分镜生成中");
     window.setTimeout(() => {
-      setEpisodes((current) =>
-        current.map((episode) =>
-          episode.id === episodeId ? { ...episode, status: "分镜已生成" } : episode,
-        ),
-      );
-    }, 2000);
+      setEpisodeStatus(episodeId, "分镜已生成");
+    }, 1500);
   }
 
   return (
@@ -45,11 +40,13 @@ export default function EpisodesPage() {
           description="按集管理剧情摘要和分镜生成状态，先生成本集分镜，再进入逐镜头页面。"
           currentStep={3}
         />
+        <DraftStatus saveStatus={saveStatus} onReset={resetProject} />
         <div className="grid gap-4 lg:grid-cols-2">
           {episodes.map((episode) => (
             <EpisodeCard
               key={episode.id}
               episode={episode}
+              onUpdate={(patch) => updateEpisode(episode.id, patch)}
               onGenerate={() => generateStoryboard(episode.id)}
             />
           ))}
@@ -61,9 +58,11 @@ export default function EpisodesPage() {
 
 function EpisodeCard({
   episode,
+  onUpdate,
   onGenerate,
 }: {
   episode: Episode;
+  onUpdate: (patch: Partial<Episode>) => void;
   onGenerate: () => void;
 }) {
   const canView = episode.status === "分镜已生成" || episode.status === "已完成";
@@ -78,8 +77,16 @@ function EpisodeCard({
               {episode.status}
             </Badge>
           </div>
-          <h2 className="cn-title mt-3 text-lg">{episode.title}</h2>
-          <p className="body-copy mt-2">{episode.synopsis}</p>
+          <input
+            value={episode.title}
+            onChange={(event) => onUpdate({ title: event.target.value })}
+            className="cn-title mt-3 w-full rounded-md border border-transparent bg-transparent px-0 py-1 text-lg outline-none focus:border-[#f28c6a]/60 focus:bg-[#fff7ea]/60"
+          />
+          <textarea
+            value={episode.synopsis}
+            onChange={(event) => onUpdate({ synopsis: event.target.value })}
+            className="body-copy mt-2 min-h-20 w-full resize-none rounded-md border border-transparent bg-transparent p-0 outline-none focus:border-[#f28c6a]/60 focus:bg-[#fff7ea]/60"
+          />
           <div className="mt-4 grid grid-cols-3 gap-2 text-center">
             <Metric label="场景数" value={String(episode.sceneCount ?? episode.shots.length)} />
             <Metric label="预计镜头数" value={String(episode.estimatedShotCount ?? episode.shots.length)} />

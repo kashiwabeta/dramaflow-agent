@@ -6,16 +6,12 @@ import {
   AppShell,
   AssetPlaceholder,
   Badge,
+  DraftStatus,
   PageHeader,
   Panel,
 } from "@/components/workspace";
-import mockProject from "@/data/mock-project.json";
-import type { AiGenerationResult, Shot } from "@/types/project";
-
-const data = mockProject as AiGenerationResult;
-const characters = data.characters;
-const scenes = data.scenes ?? [];
-const props = data.props ?? [];
+import { useProjectStore } from "@/hooks/useProjectStore";
+import type { Shot } from "@/types/project";
 
 type EditableShot = Shot & {
   status: "未生成" | "生成中" | "已生成" | "失败";
@@ -24,32 +20,35 @@ type EditableShot = Shot & {
 };
 
 export default function EpisodeShotsPage() {
+  const {
+    project,
+    saveStatus,
+    updateShot,
+    setShotStatus,
+    resetProject,
+  } = useProjectStore();
+  const characters = project.characters;
+  const scenes = project.scenes ?? [];
+  const props = project.props ?? [];
   const params = useParams<{ episodeNumber?: string }>();
   const episodeNumber = Number(params.episodeNumber ?? "1");
   const episode =
-    data.episodes.find((item) => item.episodeNumber === episodeNumber) ??
-    data.episodes[0];
-  const [shots, setShots] = useState<EditableShot[]>(
+    project.episodes.find((item) => item.episodeNumber === episodeNumber) ??
+    project.episodes[0];
+  const shots: EditableShot[] =
     episode.shots.map((shot) => ({
       ...shot,
       status: shot.status ?? "未生成",
       characterIds: shot.characterIds ?? [characters[0]?.id].filter(Boolean),
       sceneId: shot.sceneId ?? scenes[0]?.id ?? "",
-    })),
-  );
+    }));
   const [selectedShotId, setSelectedShotId] = useState(shots[0]?.id ?? "");
   const [copied, setCopied] = useState<string | null>(null);
   const selectedShot = shots.find((shot) => shot.id === selectedShotId) ?? shots[0];
 
-  function updateShot(id: string, patch: Partial<EditableShot>) {
-    setShots((current) =>
-      current.map((shot) => (shot.id === id ? { ...shot, ...patch } : shot)),
-    );
-  }
-
   function generateShot(id: string) {
-    updateShot(id, { status: "生成中" });
-    window.setTimeout(() => updateShot(id, { status: "已生成" }), 1200);
+    setShotStatus(episode.id, id, "生成中");
+    window.setTimeout(() => setShotStatus(episode.id, id, "已生成"), 1500);
   }
 
   async function copyText(text: string, key: string) {
@@ -114,6 +113,7 @@ export default function EpisodeShotsPage() {
             description={episode.synopsis}
             currentStep={3}
           />
+          <DraftStatus saveStatus={saveStatus} onReset={resetProject} />
           <div className="space-y-4">
             {shots.map((shot) => (
               <ShotEditor
@@ -121,12 +121,14 @@ export default function EpisodeShotsPage() {
                 shot={shot}
                 active={shot.id === selectedShot.id}
                 onSelect={() => setSelectedShotId(shot.id)}
-                onUpdate={(patch) => updateShot(shot.id, patch)}
+                onUpdate={(patch) => updateShot(episode.id, shot.id, patch)}
                 onGenerateImage={() => generateShot(shot.id)}
                 onGenerateVideo={() => generateShot(shot.id)}
                 onCopyImage={() => copyText(shot.imagePrompt, `${shot.id}-image`)}
                 onCopyVideo={() => copyText(shot.videoPrompt, `${shot.id}-video`)}
                 copied={copied}
+                characters={characters}
+                scenes={scenes}
               />
             ))}
           </div>
@@ -186,6 +188,8 @@ function ShotEditor({
   shot,
   active,
   copied,
+  characters,
+  scenes,
   onSelect,
   onUpdate,
   onGenerateImage,
@@ -196,6 +200,8 @@ function ShotEditor({
   shot: EditableShot;
   active: boolean;
   copied: string | null;
+  characters: Array<{ id: string; name: string }>;
+  scenes: Array<{ id: string; name: string }>;
   onSelect: () => void;
   onUpdate: (patch: Partial<EditableShot>) => void;
   onGenerateImage: () => void;

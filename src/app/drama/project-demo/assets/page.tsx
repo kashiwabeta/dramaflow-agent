@@ -6,18 +6,17 @@ import {
   AppShell,
   AssetPlaceholder,
   Badge,
+  DraftStatus,
   Panel,
 } from "@/components/workspace";
-import mockProject from "@/data/mock-project.json";
+import { useProjectStore } from "@/hooks/useProjectStore";
 import type {
-  AiGenerationResult,
   AssetSource,
   AssetStatus,
   CharacterAsset,
   SceneAsset,
 } from "@/types/project";
 
-const data = mockProject as AiGenerationResult;
 type AssetTab = "角色" | "场景" | "道具" | "风格";
 
 type CharacterState = CharacterAsset & {
@@ -32,36 +31,42 @@ type SceneState = SceneAsset & {
 
 export default function AssetsPage() {
   const [activeTab, setActiveTab] = useState<AssetTab>("角色");
-  const [characters, setCharacters] = useState<CharacterState[]>(
-    data.characters.map((character) => ({
-      ...character,
-      source: character.source ?? "AI 生成",
-      status: character.status ?? "待确认",
-      imageState: character.status === "缺少设定图" ? "missing" : "ai",
-    })),
-  );
-  const [scenes, setScenes] = useState<SceneState[]>(
-    (data.scenes ?? []).map((scene) => ({ ...scene, imageState: "ai" })),
-  );
+  const {
+    project,
+    saveStatus,
+    updateCharacter,
+    updateScene,
+    setCharacterStatus,
+    setSceneStatus,
+    resetProject,
+  } = useProjectStore();
+  const characters: CharacterState[] = project.characters.map((character) => ({
+    ...character,
+    source: character.source ?? "AI 生成",
+    status: character.status ?? "待确认",
+    imageState:
+      character.status === "缺少设定图"
+        ? "missing"
+        : character.source === "本地上传"
+          ? "local"
+          : character.source === "从资产库引用"
+            ? "library"
+            : "ai",
+  }));
+  const scenes: SceneState[] = (project.scenes ?? []).map((scene) => ({
+    ...scene,
+    imageState:
+      scene.source === "本地上传"
+        ? "local"
+        : scene.source === "从资产库引用"
+          ? "library"
+          : "ai",
+  }));
   const [libraryPicker, setLibraryPicker] = useState<
     | { kind: "character"; id: string }
     | { kind: "scene"; id: string }
     | null
   >(null);
-
-  function updateCharacter(id: string, patch: Partial<CharacterState>) {
-    setCharacters((current) =>
-      current.map((character) =>
-        character.id === id ? { ...character, ...patch } : character,
-      ),
-    );
-  }
-
-  function updateScene(id: string, patch: Partial<SceneState>) {
-    setScenes((current) =>
-      current.map((scene) => (scene.id === id ? { ...scene, ...patch } : scene)),
-    );
-  }
 
   function chooseLibraryAsset(prompt: string) {
     if (!libraryPicker) return;
@@ -70,14 +75,12 @@ export default function AssetsPage() {
         portraitPrompt: prompt,
         source: "从资产库引用",
         status: "已编辑",
-        imageState: "library",
       });
     } else {
       updateScene(libraryPicker.id, {
         visualPrompt: prompt,
         source: "从资产库引用",
         status: "已编辑",
-        imageState: "library",
       });
     }
     setLibraryPicker(null);
@@ -105,6 +108,8 @@ export default function AssetsPage() {
           </div>
         </section>
 
+        <DraftStatus saveStatus={saveStatus} onReset={resetProject} />
+
         <div className="flex flex-wrap gap-2">
           {(["角色", "场景", "道具", "风格"] as AssetTab[]).map((tab) => (
             <button
@@ -126,6 +131,7 @@ export default function AssetsPage() {
                 character={character}
                 index={index}
                 onUpdate={(patch) => updateCharacter(character.id, patch)}
+                onLock={() => setCharacterStatus(character.id, "已锁定")}
                 onPickLibrary={() => setLibraryPicker({ kind: "character", id: character.id })}
               />
             ))}
@@ -143,7 +149,16 @@ export default function AssetsPage() {
                   />
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="cn-title text-lg">{scene.name}</h2>
+                      <input
+                        value={scene.name}
+                        onChange={(event) =>
+                          updateScene(scene.id, {
+                            name: event.target.value,
+                            status: "已编辑",
+                          })
+                        }
+                        className="cn-title w-full rounded-md border border-transparent bg-transparent px-0 py-1 text-lg outline-none focus:border-[#f28c6a]/60 focus:bg-[#fff7ea]/60"
+                      />
                       <Badge tone="neutral">{scene.source}</Badge>
                       <Badge tone={scene.status === "已锁定" ? "green" : "amber"}>
                         {scene.status}
@@ -163,11 +178,12 @@ export default function AssetsPage() {
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2 border-t border-[#184b52]/15 pt-4">
-                  <AssetButton onClick={() => updateScene(scene.id, { source: "AI 生成", status: "已编辑", imageState: "ai" })}>AI 生成场景图</AssetButton>
-                  <AssetButton onClick={() => updateScene(scene.id, { source: "本地上传", status: "已编辑", imageState: "local" })}>本地上传</AssetButton>
+                  <AssetButton onClick={() => updateScene(scene.id, { source: "AI 生成", status: "已编辑" })}>AI 生成场景图</AssetButton>
+                  <AssetButton onClick={() => updateScene(scene.id, { source: "本地上传", status: "已编辑" })}>本地上传</AssetButton>
                   <AssetButton onClick={() => setLibraryPicker({ kind: "scene", id: scene.id })}>从资产库引用</AssetButton>
                   <AssetButton onClick={() => updateScene(scene.id, { status: "已编辑" })}>编辑</AssetButton>
-                  <AssetButton onClick={() => updateScene(scene.id, { status: "已锁定" })}>锁定</AssetButton>
+                  <AssetButton onClick={() => updateScene(scene.id, { source: "AI 生成", status: "已编辑", visualPrompt: `${scene.visualPrompt}, refined environment concept` })}>重新生成</AssetButton>
+                  <AssetButton onClick={() => setSceneStatus(scene.id, "已锁定")}>锁定</AssetButton>
                 </div>
               </Panel>
             ))}
@@ -176,7 +192,7 @@ export default function AssetsPage() {
 
         {activeTab === "道具" ? (
           <div className="grid gap-4 md:grid-cols-2">
-            {(data.props ?? []).map((prop) => (
+            {(project.props ?? []).map((prop) => (
               <Panel key={prop.id} className="p-4">
                 <AssetPlaceholder label={prop.name} variant="amber" />
                 <h2 className="mt-4 text-base font-semibold text-slate-950">{prop.name}</h2>
@@ -191,7 +207,7 @@ export default function AssetsPage() {
 
         {activeTab === "风格" ? (
           <div className="grid gap-4 md:grid-cols-2">
-            {(data.styles ?? []).map((style) => (
+            {(project.styles ?? []).map((style) => (
               <Panel key={style.id} className="p-4">
                 <AssetPlaceholder label={style.name} variant="slate" />
                 <h2 className="mt-4 text-base font-semibold text-slate-950">{style.name}</h2>
@@ -234,8 +250,8 @@ export default function AssetsPage() {
               </div>
               <div className="mt-4 grid gap-3">
                 {(libraryPicker.kind === "character"
-                  ? data.assetLibrary?.characters
-                  : data.assetLibrary?.scenes
+                  ? project.assetLibrary?.characters
+                  : project.assetLibrary?.scenes
                 )?.map((asset) => (
                   <button
                     key={asset.id}
@@ -260,11 +276,13 @@ function CharacterCard({
   character,
   index,
   onUpdate,
+  onLock,
   onPickLibrary,
 }: {
   character: CharacterState;
   index: number;
-  onUpdate: (patch: Partial<CharacterState>) => void;
+  onUpdate: (patch: Partial<CharacterAsset>) => void;
+  onLock: () => void;
   onPickLibrary: () => void;
 }) {
   return (
@@ -296,9 +314,21 @@ function CharacterCard({
         <div className="min-w-0">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h2 className="cn-title text-xl">{character.name}</h2>
+              <input
+                value={character.name}
+                onChange={(event) =>
+                  onUpdate({ name: event.target.value, status: "已编辑" })
+                }
+                className="cn-title w-full rounded-md border border-transparent bg-transparent px-0 py-1 text-xl outline-none focus:border-[#f28c6a]/60 focus:bg-[#fff7ea]/60"
+              />
               <div className="mt-2 flex flex-wrap gap-2">
-                <Badge tone="neutral">{character.role}</Badge>
+                <input
+                  value={character.role}
+                  onChange={(event) =>
+                    onUpdate({ role: event.target.value, status: "已编辑" })
+                  }
+                  className="meta-text rounded-md border border-[#184b52]/15 bg-[#fff7ea]/55 px-2 py-1 outline-none focus:border-[#f28c6a]/60"
+                />
                 <Badge tone={character.status === "已锁定" ? "green" : "amber"}>
                   {character.status}
                 </Badge>
@@ -307,10 +337,24 @@ function CharacterCard({
           </div>
 
           <div className="mt-4 grid gap-2 md:grid-cols-2">
-            <MetaItem label="AGE" value={character.age} />
-            <MetaItem label="PERSONALITY" value={character.archetype} />
+            <EditableMetaItem
+              label="AGE"
+              value={character.age}
+              onChange={(value) => onUpdate({ age: value, status: "已编辑" })}
+            />
+            <EditableMetaItem
+              label="PERSONALITY"
+              value={character.archetype}
+              onChange={(value) => onUpdate({ archetype: value, status: "已编辑" })}
+            />
             <MetaItem label="SOURCE" value={character.source} />
-            <MetaItem label="LOOK" value={character.visualStyle} wide />
+            <EditableMetaItem
+              label="LOOK"
+              value={character.visualStyle}
+              wide
+              multiline
+              onChange={(value) => onUpdate({ visualStyle: value, status: "已编辑" })}
+            />
           </div>
 
           <div className="mt-4">
@@ -330,14 +374,47 @@ function CharacterCard({
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2 border-t border-[#184b52]/15 pt-4">
-        <AssetButton primary onClick={() => onUpdate({ source: "AI 生成", status: "已编辑", imageState: "ai" })}>AI 生成设定图</AssetButton>
-        <AssetButton onClick={() => onUpdate({ source: "本地上传", status: "已编辑", imageState: "local" })}>从本地上传</AssetButton>
+        <AssetButton primary onClick={() => onUpdate({ source: "AI 生成", status: "已编辑" })}>AI 生成设定图</AssetButton>
+        <AssetButton onClick={() => onUpdate({ source: "本地上传", status: "已编辑" })}>从本地上传</AssetButton>
         <AssetButton onClick={onPickLibrary}>从资产库引用</AssetButton>
         <AssetButton onClick={() => onUpdate({ status: "已编辑" })}>编辑文字设定</AssetButton>
-        <AssetButton onClick={() => onUpdate({ source: "AI 生成", status: "已编辑", imageState: "ai" })}>重新生成</AssetButton>
-        <AssetButton onClick={() => onUpdate({ status: "已锁定" })}>锁定角色</AssetButton>
+        <AssetButton onClick={() => onUpdate({ source: "AI 生成", status: "已编辑", portraitPrompt: `${character.portraitPrompt ?? character.costumePrompt}, refined production concept` })}>重新生成</AssetButton>
+        <AssetButton onClick={onLock}>锁定角色</AssetButton>
       </div>
     </Panel>
+  );
+}
+
+function EditableMetaItem({
+  label,
+  value,
+  onChange,
+  wide = false,
+  multiline = false,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  wide?: boolean;
+  multiline?: boolean;
+}) {
+  return (
+    <div className={`rounded-md border border-[#184b52]/12 bg-[#fff7ea]/45 px-3 py-2 ${wide ? "md:col-span-2" : ""}`}>
+      <p className="meta-text">{label}</p>
+      {multiline ? (
+        <textarea
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="body-copy mt-1 min-h-16 w-full resize-none rounded-md border border-transparent bg-transparent p-0 outline-none focus:border-[#f28c6a]/50 focus:bg-[#fff7ea]/70"
+        />
+      ) : (
+        <input
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="body-copy mt-1 h-7 w-full rounded-md border border-transparent bg-transparent p-0 outline-none focus:border-[#f28c6a]/50 focus:bg-[#fff7ea]/70"
+        />
+      )}
+    </div>
   );
 }
 

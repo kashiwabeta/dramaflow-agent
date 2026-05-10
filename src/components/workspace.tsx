@@ -306,3 +306,22 @@ export function AssetPlaceholder({
     </div>
   );
 }
+
+export function DraftStatus({
+  saveStatus,
+  onReset,
+}: {
+  saveStatus: "idle" | "saving" | "saved";
+  onReset: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <Badge tone={saveStatus === "saving" ? "blue" : "green"}>
+        {saveStatus === "saving" ? "正在保存..." : "本地草稿已保存"}
+      </Badge>
+      <button type="button" onClick={onReset} className="tool-btn">
+        重置项目
+      </button>
+    </div>
+  );
+}
