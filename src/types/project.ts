@@ -7,6 +7,39 @@ export type CharacterAsset = {
   visualStyle: string;
   motivation: string;
   costumePrompt: string;
+  portraitPrompt?: string;
+  source?: AssetSource;
+  status?: AssetStatus;
+};
+
+export type AssetSource = "AI 生成" | "本地上传" | "从资产库引用" | "角色资产库" | "场景资产库";
+
+export type AssetStatus = "待确认" | "已编辑" | "已锁定" | "缺少设定图";
+
+export type SceneAsset = {
+  id: string;
+  name: string;
+  description: string;
+  visualPrompt: string;
+  source: AssetSource;
+  status: AssetStatus;
+};
+
+export type PropAsset = {
+  id: string;
+  name: string;
+  description: string;
+  visualPrompt: string;
+  source: AssetSource;
+  status: AssetStatus;
+};
+
+export type StyleAsset = {
+  id: string;
+  name: string;
+  description: string;
+  visualPrompt: string;
+  status: AssetStatus;
 };
 
 export type Shot = {
@@ -19,6 +52,9 @@ export type Shot = {
   dialogue: string;
   imagePrompt: string;
   videoPrompt: string;
+  characterIds?: string[];
+  sceneId?: string;
+  status?: "未生成" | "生成中" | "已生成" | "失败";
 };
 
 export type Episode = {
@@ -29,6 +65,9 @@ export type Episode = {
   synopsis: string;
   conflict: string;
   estimatedDuration: string;
+  sceneCount?: number;
+  estimatedShotCount?: number;
+  status?: "待生成分镜" | "分镜生成中" | "分镜已生成" | "部分待修改" | "已完成";
   shots: Shot[];
 };
 
@@ -41,12 +80,34 @@ export type AiGenerationResult = {
     audience: string;
     status: string;
   };
+  outline?: {
+    summary: string;
+    genre: string;
+    mainConflict: string;
+    relationships: string;
+    episodeSuggestions: string[];
+  };
   input: {
     theme: string;
     requirement: string;
     format: string;
   };
   characters: CharacterAsset[];
+  scenes?: SceneAsset[];
+  props?: PropAsset[];
+  styles?: StyleAsset[];
+  assetLibrary?: {
+    characters: Array<{
+      id: string;
+      name: string;
+      prompt: string;
+    }>;
+    scenes: Array<{
+      id: string;
+      name: string;
+      prompt: string;
+    }>;
+  };
   episodes: Episode[];
   preview: {
     selectedEpisodeId: string;

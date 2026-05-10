@@ -38,6 +38,25 @@ input {
   align-self: start;
 }
 
+.workflow-progress {
+  animation: workflow-fill 2s ease-in-out infinite;
+  width: 70%;
+}
+
+@keyframes workflow-fill {
+  0% {
+    transform: translateX(-55%);
+  }
+
+  50% {
+    transform: translateX(20%);
+  }
+
+  100% {
+    transform: translateX(95%);
+  }
+}
+
 @media (min-width: 1280px) {
   .right-preview {
     position: sticky;

@@ -7,6 +7,18 @@
     "audience": "18-35 岁女性向短剧观众",
     "status": "Mock 生成完成"
   },
+  "outline": {
+    "summary": "林见月在事业和亲密关系双重背叛后意外重回七天前。她不再直接揭穿敌人，而是借助投资人顾言深的资源，逐步找出项目被夺、父亲旧案与资本操盘之间的隐藏链路。",
+    "genre": "都市逆袭 / 情感悬疑 / 命运重启",
+    "mainConflict": "女主必须在七天内夺回短剧项目主导权，同时查清父亲旧案真相；每次推进都会暴露身边人更深的背叛。",
+    "relationships": "林见月与沈乔是多年闺蜜但利益对立；顾言深表面是投资人，实际掌握旧案线索；沈乔和资本方合谋顶替女主成为主创。",
+    "episodeSuggestions": [
+      "第 1 集用会议室封杀新闻开场，建立背叛与重启钩子。",
+      "第 2 集让女主从合同页脚发现被替换证据。",
+      "第 3 集通过顾言深的旧档案把职场复仇升级为旧案悬疑。",
+      "后续每集保留一个证据推进和一个人物关系反转。"
+    ]
+  },
   "input": {
     "theme": "女性成长、职场复仇、命运重启",
     "requirement": "生成 12 集竖屏短剧，每集 60-90 秒，前三秒必须有强冲突钩子，角色资产可直接进入生图环节。",
@@ -21,7 +33,10 @@
       "archetype": "隐忍型反击者",
       "visualStyle": "黑色风衣、微湿短发、清冷眼神，雨夜霓虹反光",
       "motivation": "找出项目被夺与父亲旧案之间的关联",
-      "costumePrompt": "27-year-old Chinese woman, black trench coat, short wet hair, determined eyes, cinematic urban night, neon reflections, realistic drama still"
+      "costumePrompt": "27-year-old Chinese woman, black trench coat, short wet hair, determined eyes, cinematic urban night, neon reflections, realistic drama still",
+      "portraitPrompt": "front-facing character concept portrait, black trench coat, short wet hair, realistic cinematic lighting",
+      "source": "AI 生成",
+      "status": "待确认"
     },
     {
       "id": "char-gu-yanshen",
@@ -31,7 +46,10 @@
       "archetype": "克制的掌局者",
       "visualStyle": "深灰西装、银边眼镜、低饱和办公室光影",
       "motivation": "用投资局揭开当年资本操盘的证据链",
-      "costumePrompt": "32-year-old Chinese man, charcoal suit, silver-rim glasses, restrained expression, premium office lighting, realistic cinematic portrait"
+      "costumePrompt": "32-year-old Chinese man, charcoal suit, silver-rim glasses, restrained expression, premium office lighting, realistic cinematic portrait",
+      "portraitPrompt": "front-facing character concept portrait, charcoal suit, silver-rim glasses, premium office lighting",
+      "source": "AI 生成",
+      "status": "待确认"
     },
     {
       "id": "char-shen-qiao",
@@ -41,9 +59,91 @@
       "archetype": "甜美伪装者",
       "visualStyle": "米白针织套装、珍珠耳饰、笑容温柔但眼神游离",
       "motivation": "摆脱长期配角位置，取代林见月成为项目主创",
-      "costumePrompt": "28-year-old Chinese woman, ivory knit suit, pearl earrings, gentle smile with uneasy eyes, soft indoor light, realistic drama character asset"
+      "costumePrompt": "28-year-old Chinese woman, ivory knit suit, pearl earrings, gentle smile with uneasy eyes, soft indoor light, realistic drama character asset",
+      "portraitPrompt": "front-facing character concept portrait, ivory knit suit, pearl earrings, soft indoor light",
+      "source": "AI 生成",
+      "status": "缺少设定图"
     }
   ],
+  "scenes": [
+    {
+      "id": "scene-meeting-room",
+      "name": "雨夜玻璃会议室",
+      "description": "高层办公楼内的透明会议室，窗外大雨和城市霓虹反射在玻璃上，适合强冲突揭露场面。",
+      "visualPrompt": "glass conference room at rainy night, neon city reflections, projection screen glow, realistic suspense drama",
+      "source": "AI 生成",
+      "status": "待确认"
+    },
+    {
+      "id": "scene-parking",
+      "name": "地下车库出口",
+      "description": "冷色灯管、潮湿地面、车灯直射，适合追车、威胁和秘密交易场景。",
+      "visualPrompt": "underground parking exit, cold fluorescent lights, wet concrete floor, black car headlights, cinematic thriller",
+      "source": "AI 生成",
+      "status": "待确认"
+    },
+    {
+      "id": "scene-office",
+      "name": "顾言深办公室",
+      "description": "高层办公室，低饱和木色与金属材质，落地窗外是城市夜景。",
+      "visualPrompt": "premium executive office at night, city skyline, muted wood and metal materials, cinematic realism",
+      "source": "AI 生成",
+      "status": "待确认"
+    }
+  ],
+  "props": [
+    {
+      "id": "prop-case-file",
+      "name": "旧事故档案袋",
+      "description": "带有雨渍的牛皮纸档案袋，封面写着林见月父亲的名字。",
+      "visualPrompt": "old kraft paper case file with rain stains, handwritten Chinese name, suspense detail shot",
+      "source": "AI 生成",
+      "status": "待确认"
+    },
+    {
+      "id": "prop-usb-ring-box",
+      "name": "藏有 U 盘的戒指盒",
+      "description": "用于暗中复制投资流水的关键道具，外观像普通黑色戒指盒。",
+      "visualPrompt": "black ring box hiding a tiny USB drive, macro shot, suspenseful office lighting",
+      "source": "AI 生成",
+      "status": "待确认"
+    }
+  ],
+  "styles": [
+    {
+      "id": "style-rain-noir",
+      "name": "雨夜冷调悬疑",
+      "description": "冷蓝雨夜、玻璃反射、低饱和人物肤色，保留短剧竖屏可读性。",
+      "visualPrompt": "cold blue rainy night, glass reflections, realistic vertical short drama, high contrast but readable faces",
+      "status": "待确认"
+    }
+  ],
+  "assetLibrary": {
+    "characters": [
+      {
+        "id": "lib-char-01",
+        "name": "冷感女主参考",
+        "prompt": "library character portrait, sharp eyes, black coat, rain noir style"
+      },
+      {
+        "id": "lib-char-02",
+        "name": "商务男主参考",
+        "prompt": "library character portrait, charcoal suit, restrained investor, premium office"
+      }
+    ],
+    "scenes": [
+      {
+        "id": "lib-scene-01",
+        "name": "玻璃会议室参考",
+        "prompt": "library scene, glass boardroom, city rain reflections, projection light"
+      },
+      {
+        "id": "lib-scene-02",
+        "name": "地下车库参考",
+        "prompt": "library scene, underground parking, wet floor, cinematic headlights"
+      }
+    ]
+  },
   "episodes": [
     {
       "id": "ep-01",
@@ -53,6 +153,9 @@
       "synopsis": "林见月发现闺蜜沈乔顶替她成为项目主创，未婚夫也站在对方阵营。争执后她冲进雨夜，被一辆黑车逼停，醒来时回到七天前。",
       "conflict": "信任崩塌与时间重启同时发生。",
       "estimatedDuration": "75 秒",
+      "sceneCount": 3,
+      "estimatedShotCount": 9,
+      "status": "待生成分镜",
       "shots": [
         {
           "id": "shot-01-01",
@@ -63,7 +166,10 @@
           "action": "林见月推门，所有人突然沉默，投影屏定格在她的黑料热搜。",
           "dialogue": "林见月：这条新闻，谁发的？",
           "imagePrompt": "vertical 9:16 drama still, Chinese woman in black trench coat entering glass meeting room, rain on windows, shocked executives, projection screen glow, cinematic realism",
-          "videoPrompt": "handheld push-in through glass door, rain reflections, room falls silent, projection light flickers on protagonist face"
+          "videoPrompt": "handheld push-in through glass door, rain reflections, room falls silent, projection light flickers on protagonist face",
+          "characterIds": ["char-lin-jianyue"],
+          "sceneId": "scene-meeting-room",
+          "status": "未生成"
         },
         {
           "id": "shot-01-02",
@@ -74,7 +180,10 @@
           "action": "沈乔温柔起身，却把林见月的策划案推到自己面前。",
           "dialogue": "沈乔：见月，你太累了，这个项目我替你扛。",
           "imagePrompt": "Chinese woman in ivory knit suit standing at conference table, pearl earrings, gentle smile, stolen script deck, tense office, realistic cinematic lighting",
-          "videoPrompt": "close-up shot reverse shot, hand sliding project proposal across table, subtle smile, tense silence"
+          "videoPrompt": "close-up shot reverse shot, hand sliding project proposal across table, subtle smile, tense silence",
+          "characterIds": ["char-lin-jianyue", "char-shen-qiao"],
+          "sceneId": "scene-meeting-room",
+          "status": "未生成"
         },
         {
           "id": "shot-01-03",
@@ -85,7 +194,10 @@
           "action": "林见月抱着资料冲向雨夜，身后传来刹车声。",
           "dialogue": "顾言深：想活，就别上那辆车。",
           "imagePrompt": "underground parking exit, Chinese woman running with documents, black car headlights, rain outside, mysterious man in charcoal suit, suspenseful cinematic frame",
-          "videoPrompt": "low-angle tracking shot, papers scatter, headlights flare, man steps from shadow, rain grows louder"
+          "videoPrompt": "low-angle tracking shot, papers scatter, headlights flare, man steps from shadow, rain grows louder",
+          "characterIds": ["char-lin-jianyue", "char-gu-yanshen"],
+          "sceneId": "scene-parking",
+          "status": "未生成"
         }
       ]
     },
@@ -97,6 +209,9 @@
       "synopsis": "回到七天前后，林见月不再揭穿情绪，而是先检查合同链路。她在打印室发现沈乔留下的替换痕迹，并首次主动联系顾言深。",
       "conflict": "女主开始从受害者转向操盘者。",
       "estimatedDuration": "68 秒",
+      "sceneCount": 3,
+      "estimatedShotCount": 8,
+      "status": "待生成分镜",
       "shots": [
         {
           "id": "shot-02-01",
@@ -107,7 +222,10 @@
           "action": "林见月抽出签名页，发现页脚编号与原件不一致。",
           "dialogue": "林见月：原来第一步，是从这里偷走我。",
           "imagePrompt": "vertical close-up, contract pages on printer, Chinese woman's hand finding mismatched footer number, fluorescent office light, thriller detail shot",
-          "videoPrompt": "fast overhead cut-in, fingers flip pages, mismatched page number highlighted, printer hum"
+          "videoPrompt": "fast overhead cut-in, fingers flip pages, mismatched page number highlighted, printer hum",
+          "characterIds": ["char-lin-jianyue"],
+          "sceneId": "scene-office",
+          "status": "未生成"
         },
         {
           "id": "shot-02-02",
@@ -118,7 +236,10 @@
           "action": "沈乔的身影出现在玻璃反射里，林见月假装没有发现。",
           "dialogue": "沈乔：你怎么还没下班？",
           "imagePrompt": "office print room glass reflection, suspicious woman in ivory outfit behind protagonist, protagonist calm, cool fluorescent lighting, vertical drama composition",
-          "videoPrompt": "reflection reveal in glass partition, protagonist hides contract page, soft footsteps approach"
+          "videoPrompt": "reflection reveal in glass partition, protagonist hides contract page, soft footsteps approach",
+          "characterIds": ["char-lin-jianyue", "char-shen-qiao"],
+          "sceneId": "scene-office",
+          "status": "未生成"
         },
         {
           "id": "shot-02-03",
@@ -129,7 +250,10 @@
           "action": "林见月给顾言深发出第一条信息：我要谈一笔你不会亏的交易。",
           "dialogue": "顾言深：你终于醒了。",
           "imagePrompt": "Chinese woman in emergency stairwell, red safety light, phone screen message, determined face, urban suspense drama still",
-          "videoPrompt": "phone close-up typing message, rack focus to protagonist eyes, reply notification lights her face"
+          "videoPrompt": "phone close-up typing message, rack focus to protagonist eyes, reply notification lights her face",
+          "characterIds": ["char-lin-jianyue", "char-gu-yanshen"],
+          "sceneId": "scene-office",
+          "status": "未生成"
         }
       ]
     },
@@ -141,6 +265,9 @@
       "synopsis": "顾言深提出合作条件：林见月交出项目底稿，他提供父亲旧案线索。林见月表面同意，暗中复制了他电脑上的投资流水。",
       "conflict": "合作与互相试探并行。",
       "estimatedDuration": "82 秒",
+      "sceneCount": 2,
+      "estimatedShotCount": 7,
+      "status": "待生成分镜",
       "shots": [
         {
           "id": "shot-03-01",
@@ -151,7 +278,10 @@
           "action": "顾言深把旧档案推向林见月，档案袋边缘沾着雨渍。",
           "dialogue": "顾言深：你父亲不是意外。",
           "imagePrompt": "premium office at night, old case file on table, rain marks, Chinese investor in charcoal suit, Chinese woman stunned, city lights, cinematic realism 9:16",
-          "videoPrompt": "slow table slide across old file, city lights shimmer, protagonist freezes at father's name"
+          "videoPrompt": "slow table slide across old file, city lights shimmer, protagonist freezes at father's name",
+          "characterIds": ["char-lin-jianyue", "char-gu-yanshen"],
+          "sceneId": "scene-office",
+          "status": "未生成"
         },
         {
           "id": "shot-03-02",
@@ -162,7 +292,10 @@
           "action": "顾言深提出交换，林见月反问他为什么选择自己。",
           "dialogue": "林见月：你要的不是我的底稿，是我这枚棋子。",
           "imagePrompt": "two Chinese leads facing each other near floor-to-ceiling window, night skyline, tense negotiation, restrained emotions, realistic short drama still",
-          "videoPrompt": "medium close-up two-shot, city reflections divide their faces, controlled confrontation"
+          "videoPrompt": "medium close-up two-shot, city reflections divide their faces, controlled confrontation",
+          "characterIds": ["char-lin-jianyue", "char-gu-yanshen"],
+          "sceneId": "scene-office",
+          "status": "未生成"
         },
         {
           "id": "shot-03-03",
@@ -173,7 +306,10 @@
           "action": "林见月把 U 盘藏进戒指盒，拷贝投资流水。",
           "dialogue": "林见月：合作可以，底牌各留一张。",
           "imagePrompt": "extreme close-up, USB hidden in ring box beside laptop, elegant office desk, woman's hand, suspenseful detail, cinematic realistic lighting",
-          "videoPrompt": "macro shot of ring box opening, USB indicator blinks, laptop reflection in protagonist eye"
+          "videoPrompt": "macro shot of ring box opening, USB indicator blinks, laptop reflection in protagonist eye",
+          "characterIds": ["char-lin-jianyue"],
+          "sceneId": "scene-office",
+          "status": "未生成"
         }
       ]
     }
