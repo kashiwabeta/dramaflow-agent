@@ -58,7 +58,17 @@ export type Shot = {
   videoPrompt: string;
   characterIds?: string[];
   sceneId?: string;
-  status?: "未生成" | "生成中" | "已生成" | "失败" | "图片生成中" | "图片已生成" | "视频生成中" | "视频已生成";
+  status?:
+    | "未生成"
+    | "提示词生成中"
+    | "提示词已生成"
+    | "生成中"
+    | "已生成"
+    | "失败"
+    | "图片生成中"
+    | "图片已生成"
+    | "视频生成中"
+    | "视频已生成";
 };
 
 export type Episode = {
