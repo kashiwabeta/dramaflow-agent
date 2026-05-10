@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function Icon({
   name,
@@ -108,7 +111,7 @@ export function Panel({
   className?: string;
 }) {
   return (
-    <section className={`rounded-lg border border-slate-200 bg-white shadow-sm ${className}`}>
+    <section className={`paper-card rounded-lg border bg-white shadow-sm ${className}`}>
       {children}
     </section>
   );
@@ -122,16 +125,16 @@ export function Badge({
   tone?: "neutral" | "blue" | "green" | "amber" | "dark" | "red";
 }) {
   const tones = {
-    neutral: "bg-slate-100 text-slate-600 ring-slate-200",
-    blue: "bg-sky-50 text-sky-700 ring-sky-100",
-    green: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-    amber: "bg-amber-50 text-amber-700 ring-amber-100",
-    red: "bg-rose-50 text-rose-700 ring-rose-100",
-    dark: "bg-slate-950 text-white ring-slate-950",
+    neutral: "bg-[#efe7d8] text-[#6c746f] ring-[#d8cdbc]",
+    blue: "bg-[#dfe8ea] text-[#25545c] ring-[#bdd0d4]",
+    green: "bg-[#e2eadf] text-[#496f5f] ring-[#c7d8cd]",
+    amber: "bg-[#f6e4d3] text-[#b3664d] ring-[#edc4ae]",
+    red: "bg-[#f6ded7] text-[#a45348] ring-[#ebbdb3]",
+    dark: "bg-[#184b52] text-[#fff7ea] ring-[#184b52]",
   };
 
   return (
-    <span className={`rounded-md px-2 py-1 text-xs font-semibold ring-1 ${tones[tone]}`}>
+    <span className={`echo-label rounded-md px-2 py-1 text-xs font-semibold ring-1 ${tones[tone]}`}>
       {children}
     </span>
   );
@@ -151,16 +154,17 @@ export function ButtonLink({
       href={href}
       className={`inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold transition ${
         variant === "primary"
-          ? "bg-slate-950 text-white hover:bg-slate-800"
-          : "border border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+          ? "echo-primary-btn text-white"
+          : "echo-secondary-btn"
       }`}
     >
-      {children}
+      {children} <span className="ml-2">→</span>
     </Link>
   );
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const navItems = [
     { label: "首页", icon: "home", href: "/" },
     { label: "一键直出", icon: "bolt", href: "/one-click/new" },
@@ -170,26 +174,39 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb] text-slate-900">
+    <main className="echo-page min-h-screen text-[#173f47]">
       <div className="flex min-h-screen">
-        <nav className="hidden w-[88px] shrink-0 border-r border-slate-200 bg-white px-3 py-5 lg:flex lg:flex-col lg:items-center">
+        <nav className="hidden w-[88px] shrink-0 border-r border-[#28545b]/25 bg-[#d4e1e7]/70 px-3 py-5 lg:flex lg:flex-col lg:items-center">
           <Link
             href="/"
-            className="flex h-11 w-11 items-center justify-center rounded-lg bg-slate-950 text-sm font-bold text-white"
+            className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#f28c6a] bg-[#fff7ea] text-sm font-bold tracking-[0.18em] text-[#184b52] shadow-sm"
           >
             DF
           </Link>
           <div className="mt-8 flex flex-1 flex-col items-center gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="group flex w-full flex-col items-center gap-1 rounded-lg px-2 py-3 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-              >
-                <Icon name={item.icon} />
-                <span>{item.label}</span>
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const active =
+                item.href === "/"
+                  ? pathname === "/"
+                  : pathname === item.href || pathname.startsWith(`${item.href}/`);
+              return (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  className={`group relative flex w-full flex-col items-center gap-1 rounded-lg px-2 py-3 text-[11px] font-semibold transition ${
+                    active
+                      ? "bg-[#fff7ea] text-[#184b52] shadow-sm"
+                      : "text-[#5f7880] hover:bg-[#fff7ea]/60 hover:text-[#184b52]"
+                  }`}
+                >
+                  {active ? (
+                    <span className="absolute left-0 top-3 h-8 w-0.5 rounded-full bg-[#f28c6a]" />
+                  ) : null}
+                  <Icon name={item.icon} />
+                  <span>{item.label}</span>
+                </Link>
+              );
+            })}
           </div>
         </nav>
         <div className="min-w-0 flex-1">{children}</div>
@@ -199,29 +216,41 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 export function StepBar({ current }: { current: 1 | 2 | 3 }) {
-  const steps = ["剧本大纲", "角色与场景", "分集视频"];
+  const steps = [
+    { zh: "剧本大纲", en: "SCRIPT OUTLINE" },
+    { zh: "角色与场景", en: "CHARACTER SCENE" },
+    { zh: "分集视频", en: "EPISODE PLAN" },
+  ];
   return (
-    <div className="grid gap-2 rounded-lg border border-slate-200 bg-white p-2 shadow-sm md:grid-cols-3">
+    <div className="paper-card rounded-lg border bg-white px-4 py-3 shadow-sm">
+      <div className="grid gap-3 md:grid-cols-3">
       {steps.map((step, index) => {
         const active = index + 1 <= current;
         return (
           <div
-            key={step}
-            className={`flex items-center gap-3 rounded-md px-3 py-2 ${
-              active ? "bg-slate-950 text-white" : "bg-slate-50 text-slate-500"
+            key={step.en}
+            className={`relative flex items-center gap-3 rounded-md px-2 py-2 ${
+              active ? "text-[#184b52]" : "text-[#80949a]"
             }`}
           >
             <span
-              className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
-                active ? "bg-white text-slate-950" : "bg-white text-slate-400 ring-1 ring-slate-200"
+              className={`font-mono text-xl font-semibold tracking-[0.12em] ${
+                active ? "text-[#f28c6a]" : "text-[#afbabd]"
               }`}
             >
-              {index + 1}
+              {String(index + 1).padStart(2, "0")}
             </span>
-            <span className="text-sm font-semibold">{step}</span>
+            <span className="min-w-0">
+              <span className="section-kicker block text-[10px]">{step.en}</span>
+              <span className="meta-text block normal-case tracking-normal">{step.zh}</span>
+            </span>
+            {index < steps.length - 1 ? (
+              <span className="absolute right-3 top-1/2 hidden h-px w-10 bg-[#184b52]/35 md:block" />
+            ) : null}
           </div>
         );
       })}
+      </div>
     </div>
   );
 }
@@ -242,11 +271,11 @@ export function PageHeader({
       <Panel className="p-5">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <Badge tone="dark">DramaFlow Agent</Badge>
-            <h1 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950">
+            <p className="section-kicker">DRAMAFLOW AGENT</p>
+            <h1 className="cn-title mt-3">
               {title}
             </h1>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-500">
+            <p className="body-copy mt-2 max-w-3xl">
               {description}
             </p>
           </div>
@@ -266,13 +295,13 @@ export function AssetPlaceholder({
   variant?: "blue" | "green" | "amber" | "slate";
 }) {
   const colors = {
-    blue: "from-slate-900 via-slate-600 to-sky-500",
-    green: "from-slate-900 via-emerald-800 to-emerald-400",
-    amber: "from-slate-900 via-amber-800 to-amber-400",
-    slate: "from-slate-950 via-slate-700 to-slate-400",
+    blue: "from-[#173f47] via-[#6e94a4] to-[#e6b79f]",
+    green: "from-[#173f47] via-[#6f8f7d] to-[#e8d8b9]",
+    amber: "from-[#184b52] via-[#b98264] to-[#f3d0b6]",
+    slate: "from-[#173f47] via-[#78919a] to-[#cdd9dc]",
   };
   return (
-    <div className={`flex aspect-[4/3] items-center justify-center rounded-lg bg-gradient-to-br ${colors[variant]} text-sm font-semibold text-white`}>
+    <div className={`flex aspect-[4/3] items-center justify-center rounded-md border border-[#fff7ea] bg-gradient-to-br ${colors[variant]} p-4 text-center text-sm font-semibold text-[#fff7ea] shadow-sm`}>
       {label}
     </div>
   );

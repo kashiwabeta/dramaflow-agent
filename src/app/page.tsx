@@ -33,10 +33,10 @@ export default function Home() {
       <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center px-5 py-10">
         <div className="mb-8">
           <Badge tone="dark">DramaFlow Agent</Badge>
-          <h1 className="mt-4 text-3xl font-semibold tracking-normal text-slate-950">
+          <h1 className="cn-title mt-4">
             AI 短剧 Agent 工作台
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+          <p className="body-copy mt-2 max-w-2xl">
             当前 MVP 聚焦一键直出主流程：剧本拆解、临时资产确认、分集视频生成。
           </p>
         </div>
@@ -50,10 +50,10 @@ export default function Home() {
                 <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
                   <Icon name={card.icon} />
                 </div>
-                <h2 className="mt-5 text-base font-semibold text-slate-950">
+                <h2 className="cn-title mt-5 text-lg">
                   {card.title}
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-slate-500">{card.desc}</p>
+                <p className="body-copy mt-2">{card.desc}</p>
               </div>
               <ButtonLink href={card.href} variant={card.primary ? "primary" : "secondary"}>
                 {card.action}

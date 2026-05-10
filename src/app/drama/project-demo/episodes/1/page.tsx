@@ -75,7 +75,7 @@ export default function EpisodeShotsPage() {
         <aside className="space-y-4">
           <Panel className="p-4">
             <h2 className="text-sm font-semibold text-slate-950">项目资产库</h2>
-            <p className="mt-1 text-sm leading-6 text-slate-500">
+            <p className="body-copy mt-1">
               已确认角色、场景和道具可被镜头引用。
             </p>
           </Panel>
@@ -150,12 +150,12 @@ export default function EpisodeShotsPage() {
                 <div className="flex h-full flex-col justify-between">
                   <div>
                     <Badge tone="dark">EP 01 · Shot {selectedShot.index}</Badge>
-                    <h3 className="mt-5 text-2xl font-semibold leading-8">{selectedShot.scene}</h3>
-                    <p className="mt-3 text-sm leading-6 text-slate-200">{selectedShot.action}</p>
+                    <h3 className="cn-title mt-5 text-2xl text-[#fff7ea]">{selectedShot.scene}</h3>
+                    <p className="mt-3 text-sm leading-7 text-[#e8dcca]">{selectedShot.action}</p>
                   </div>
                   <div className="rounded-lg bg-white/12 p-4 backdrop-blur-md ring-1 ring-white/15">
                     <p className="text-xs font-semibold text-slate-300">Video Prompt</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-100">{selectedShot.videoPrompt}</p>
+                    <p className="prompt-text mt-2 text-[#fff7ea]">{selectedShot.videoPrompt}</p>
                   </div>
                 </div>
               </div>
@@ -295,7 +295,7 @@ function PromptArea({
       <textarea
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 min-h-20 w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-6 outline-none focus:border-sky-300 focus:bg-white"
+        className="prompt-text prompt-box mt-1 min-h-20 w-full rounded-lg p-3 outline-none"
       />
     </label>
   );

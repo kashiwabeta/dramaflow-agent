@@ -69,7 +69,7 @@ function AssetSection({
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-slate-950">{title}</h2>
+        <h2 className="cn-title text-lg">{title}</h2>
         <Badge tone="neutral">{count} 个资产</Badge>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{children}</div>
@@ -90,7 +90,7 @@ function LibraryCard({
     <Panel className="p-4 transition hover:border-sky-200 hover:shadow-md">
       <AssetPlaceholder label={title} variant={variant} />
       <h3 className="mt-4 text-sm font-semibold text-slate-950">{title}</h3>
-      <p className="mt-2 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
+      <p className="prompt-text prompt-box mt-2 rounded-lg p-3">
         {prompt}
       </p>
     </Panel>

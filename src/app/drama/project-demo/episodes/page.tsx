@@ -78,8 +78,8 @@ function EpisodeCard({
               {episode.status}
             </Badge>
           </div>
-          <h2 className="mt-3 text-base font-semibold text-slate-950">{episode.title}</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-500">{episode.synopsis}</p>
+          <h2 className="cn-title mt-3 text-lg">{episode.title}</h2>
+          <p className="body-copy mt-2">{episode.synopsis}</p>
           <div className="mt-4 grid grid-cols-3 gap-2 text-center">
             <Metric label="场景数" value={String(episode.sceneCount ?? episode.shots.length)} />
             <Metric label="预计镜头数" value={String(episode.estimatedShotCount ?? episode.shots.length)} />
