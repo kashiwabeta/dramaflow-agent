@@ -1,0 +1,192 @@
+{
+  "project": {
+    "title": "她在雨夜重启人生",
+    "genre": "都市逆袭 / 情感悬疑",
+    "logline": "被至亲背叛的制片助理林见月，在一场雨夜事故后获得重来七天的机会，必须在真相曝光前夺回项目与人生主动权。",
+    "tone": "高密度反转、强情绪钩子、电影感冷暖对比",
+    "audience": "18-35 岁女性向短剧观众",
+    "status": "Mock 生成完成"
+  },
+  "input": {
+    "theme": "女性成长、职场复仇、命运重启",
+    "requirement": "生成 12 集竖屏短剧，每集 60-90 秒，前三秒必须有强冲突钩子，角色资产可直接进入生图环节。",
+    "format": "9:16 竖屏，现代都市，写实电影质感"
+  },
+  "characters": [
+    {
+      "id": "char-lin-jianyue",
+      "name": "林见月",
+      "role": "女主 / 制片助理",
+      "age": "27",
+      "archetype": "隐忍型反击者",
+      "visualStyle": "黑色风衣、微湿短发、清冷眼神，雨夜霓虹反光",
+      "motivation": "找出项目被夺与父亲旧案之间的关联",
+      "costumePrompt": "27-year-old Chinese woman, black trench coat, short wet hair, determined eyes, cinematic urban night, neon reflections, realistic drama still"
+    },
+    {
+      "id": "char-gu-yanshen",
+      "name": "顾言深",
+      "role": "投资人 / 隐秘盟友",
+      "age": "32",
+      "archetype": "克制的掌局者",
+      "visualStyle": "深灰西装、银边眼镜、低饱和办公室光影",
+      "motivation": "用投资局揭开当年资本操盘的证据链",
+      "costumePrompt": "32-year-old Chinese man, charcoal suit, silver-rim glasses, restrained expression, premium office lighting, realistic cinematic portrait"
+    },
+    {
+      "id": "char-shen-qiao",
+      "name": "沈乔",
+      "role": "女主闺蜜 / 反派合谋者",
+      "age": "28",
+      "archetype": "甜美伪装者",
+      "visualStyle": "米白针织套装、珍珠耳饰、笑容温柔但眼神游离",
+      "motivation": "摆脱长期配角位置，取代林见月成为项目主创",
+      "costumePrompt": "28-year-old Chinese woman, ivory knit suit, pearl earrings, gentle smile with uneasy eyes, soft indoor light, realistic drama character asset"
+    }
+  ],
+  "episodes": [
+    {
+      "id": "ep-01",
+      "episodeNumber": 1,
+      "title": "雨夜，她看见自己的结局",
+      "hook": "林见月推开会议室门，屏幕上竟播放着她被全网封杀的新闻。",
+      "synopsis": "林见月发现闺蜜沈乔顶替她成为项目主创，未婚夫也站在对方阵营。争执后她冲进雨夜，被一辆黑车逼停，醒来时回到七天前。",
+      "conflict": "信任崩塌与时间重启同时发生。",
+      "estimatedDuration": "75 秒",
+      "shots": [
+        {
+          "id": "shot-01-01",
+          "index": 1,
+          "duration": "0-4s",
+          "camera": "手持推进，轻微晃动",
+          "scene": "玻璃会议室外，雨水拍打窗面",
+          "action": "林见月推门，所有人突然沉默，投影屏定格在她的黑料热搜。",
+          "dialogue": "林见月：这条新闻，谁发的？",
+          "imagePrompt": "vertical 9:16 drama still, Chinese woman in black trench coat entering glass meeting room, rain on windows, shocked executives, projection screen glow, cinematic realism",
+          "videoPrompt": "handheld push-in through glass door, rain reflections, room falls silent, projection light flickers on protagonist face"
+        },
+        {
+          "id": "shot-01-02",
+          "index": 2,
+          "duration": "5-18s",
+          "camera": "正反打特写",
+          "scene": "会议桌尽头，沈乔坐在主创席",
+          "action": "沈乔温柔起身，却把林见月的策划案推到自己面前。",
+          "dialogue": "沈乔：见月，你太累了，这个项目我替你扛。",
+          "imagePrompt": "Chinese woman in ivory knit suit standing at conference table, pearl earrings, gentle smile, stolen script deck, tense office, realistic cinematic lighting",
+          "videoPrompt": "close-up shot reverse shot, hand sliding project proposal across table, subtle smile, tense silence"
+        },
+        {
+          "id": "shot-01-03",
+          "index": 3,
+          "duration": "19-38s",
+          "camera": "低机位跟拍",
+          "scene": "地下车库出口，冷色灯光",
+          "action": "林见月抱着资料冲向雨夜，身后传来刹车声。",
+          "dialogue": "顾言深：想活，就别上那辆车。",
+          "imagePrompt": "underground parking exit, Chinese woman running with documents, black car headlights, rain outside, mysterious man in charcoal suit, suspenseful cinematic frame",
+          "videoPrompt": "low-angle tracking shot, papers scatter, headlights flare, man steps from shadow, rain grows louder"
+        }
+      ]
+    },
+    {
+      "id": "ep-02",
+      "episodeNumber": 2,
+      "title": "重来七天，第一刀先砍向合同",
+      "hook": "林见月提前十分钟截住合同，却发现签名页已经被换。",
+      "synopsis": "回到七天前后，林见月不再揭穿情绪，而是先检查合同链路。她在打印室发现沈乔留下的替换痕迹，并首次主动联系顾言深。",
+      "conflict": "女主开始从受害者转向操盘者。",
+      "estimatedDuration": "68 秒",
+      "shots": [
+        {
+          "id": "shot-02-01",
+          "index": 1,
+          "duration": "0-5s",
+          "camera": "俯拍快速切入",
+          "scene": "打印室，纸张堆叠凌乱",
+          "action": "林见月抽出签名页，发现页脚编号与原件不一致。",
+          "dialogue": "林见月：原来第一步，是从这里偷走我。",
+          "imagePrompt": "vertical close-up, contract pages on printer, Chinese woman's hand finding mismatched footer number, fluorescent office light, thriller detail shot",
+          "videoPrompt": "fast overhead cut-in, fingers flip pages, mismatched page number highlighted, printer hum"
+        },
+        {
+          "id": "shot-02-02",
+          "index": 2,
+          "duration": "6-28s",
+          "camera": "镜面反射构图",
+          "scene": "打印室玻璃隔断",
+          "action": "沈乔的身影出现在玻璃反射里，林见月假装没有发现。",
+          "dialogue": "沈乔：你怎么还没下班？",
+          "imagePrompt": "office print room glass reflection, suspicious woman in ivory outfit behind protagonist, protagonist calm, cool fluorescent lighting, vertical drama composition",
+          "videoPrompt": "reflection reveal in glass partition, protagonist hides contract page, soft footsteps approach"
+        },
+        {
+          "id": "shot-02-03",
+          "index": 3,
+          "duration": "29-52s",
+          "camera": "手机屏幕特写转人物特写",
+          "scene": "楼梯间，安全灯微红",
+          "action": "林见月给顾言深发出第一条信息：我要谈一笔你不会亏的交易。",
+          "dialogue": "顾言深：你终于醒了。",
+          "imagePrompt": "Chinese woman in emergency stairwell, red safety light, phone screen message, determined face, urban suspense drama still",
+          "videoPrompt": "phone close-up typing message, rack focus to protagonist eyes, reply notification lights her face"
+        }
+      ]
+    },
+    {
+      "id": "ep-03",
+      "episodeNumber": 3,
+      "title": "盟友开价，真相要用信任交换",
+      "hook": "顾言深把一份旧事故档案放到桌上，封面写着林见月父亲的名字。",
+      "synopsis": "顾言深提出合作条件：林见月交出项目底稿，他提供父亲旧案线索。林见月表面同意，暗中复制了他电脑上的投资流水。",
+      "conflict": "合作与互相试探并行。",
+      "estimatedDuration": "82 秒",
+      "shots": [
+        {
+          "id": "shot-03-01",
+          "index": 1,
+          "duration": "0-6s",
+          "camera": "桌面横移",
+          "scene": "高层办公室，城市夜景",
+          "action": "顾言深把旧档案推向林见月，档案袋边缘沾着雨渍。",
+          "dialogue": "顾言深：你父亲不是意外。",
+          "imagePrompt": "premium office at night, old case file on table, rain marks, Chinese investor in charcoal suit, Chinese woman stunned, city lights, cinematic realism 9:16",
+          "videoPrompt": "slow table slide across old file, city lights shimmer, protagonist freezes at father's name"
+        },
+        {
+          "id": "shot-03-02",
+          "index": 2,
+          "duration": "7-33s",
+          "camera": "双人中近景",
+          "scene": "办公室落地窗前",
+          "action": "顾言深提出交换，林见月反问他为什么选择自己。",
+          "dialogue": "林见月：你要的不是我的底稿，是我这枚棋子。",
+          "imagePrompt": "two Chinese leads facing each other near floor-to-ceiling window, night skyline, tense negotiation, restrained emotions, realistic short drama still",
+          "videoPrompt": "medium close-up two-shot, city reflections divide their faces, controlled confrontation"
+        },
+        {
+          "id": "shot-03-03",
+          "index": 3,
+          "duration": "34-60s",
+          "camera": "极近特写",
+          "scene": "办公桌边缘，笔记本电脑旁",
+          "action": "林见月把 U 盘藏进戒指盒，拷贝投资流水。",
+          "dialogue": "林见月：合作可以，底牌各留一张。",
+          "imagePrompt": "extreme close-up, USB hidden in ring box beside laptop, elegant office desk, woman's hand, suspenseful detail, cinematic realistic lighting",
+          "videoPrompt": "macro shot of ring box opening, USB indicator blinks, laptop reflection in protagonist eye"
+        }
+      ]
+    }
+  ],
+  "preview": {
+    "selectedEpisodeId": "ep-01",
+    "selectedShotId": "shot-01-01",
+    "imagePrompt": "vertical 9:16 drama still, Chinese woman in black trench coat entering glass meeting room, rain on windows, shocked executives, projection screen glow, cinematic realism",
+    "videoPrompt": "handheld push-in through glass door, rain reflections, room falls silent, projection light flickers on protagonist face",
+    "productionNotes": [
+      "主色调使用冷蓝雨夜和会议室暖白形成对比。",
+      "前三秒必须先给黑料热搜画面，再切女主反应。",
+      "竖屏构图保留人物上半身和投影屏信息，方便字幕叠加。"
+    ]
+  }
+}
