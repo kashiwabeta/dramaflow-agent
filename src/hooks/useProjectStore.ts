@@ -143,6 +143,20 @@ export function useProjectStore() {
     [updateShot],
   );
 
+  const updateOneClick = useCallback(
+    (patch: Partial<NonNullable<AiGenerationResult["oneClick"]>>) => {
+      setProject((current) => ({
+        ...current,
+        oneClick: {
+          analysisStatus: current.oneClick?.analysisStatus ?? "idle",
+          analysisStep: current.oneClick?.analysisStep ?? 0,
+          ...patch,
+        },
+      }));
+    },
+    [],
+  );
+
   const resetProject = useCallback(() => {
     window.localStorage.removeItem(STORAGE_KEY);
     setProject(cloneProject(initialProject));
@@ -160,6 +174,7 @@ export function useProjectStore() {
     setSceneStatus,
     setEpisodeStatus,
     setShotStatus,
+    updateOneClick,
     resetProject,
   };
 }

@@ -14,10 +14,27 @@ import { useProjectStore } from "@/hooks/useProjectStore";
 import type { Shot } from "@/types/project";
 
 type EditableShot = Shot & {
-  status: "未生成" | "生成中" | "已生成" | "失败";
+  status: NonNullable<Shot["status"]>;
   characterIds: string[];
   sceneId: string;
 };
+
+function shotTone(status: EditableShot["status"]): "neutral" | "blue" | "green" | "red" {
+  if (status.includes("生成中")) return "blue";
+  if (status.includes("已生成") || status === "已生成") return "green";
+  if (status === "失败") return "red";
+  return "neutral";
+}
+
+function previewStatusLabel(status: EditableShot["status"]) {
+  if (status === "图片生成中") return "Mock image rendering...";
+  if (status === "图片已生成") return "Mock image ready";
+  if (status === "视频生成中") return "Mock video rendering...";
+  if (status === "视频已生成") return "Mock video ready";
+  if (status === "生成中") return "Mock asset rendering...";
+  if (status === "已生成") return "Mock preview ready";
+  return "Waiting for generation";
+}
 
 export default function EpisodeShotsPage() {
   const {
@@ -46,9 +63,14 @@ export default function EpisodeShotsPage() {
   const [copied, setCopied] = useState<string | null>(null);
   const selectedShot = shots.find((shot) => shot.id === selectedShotId) ?? shots[0];
 
-  function generateShot(id: string) {
-    setShotStatus(episode.id, id, "生成中");
-    window.setTimeout(() => setShotStatus(episode.id, id, "已生成"), 1500);
+  function generateImage(id: string) {
+    setShotStatus(episode.id, id, "图片生成中");
+    window.setTimeout(() => setShotStatus(episode.id, id, "图片已生成"), 1500);
+  }
+
+  function generateVideo(id: string) {
+    setShotStatus(episode.id, id, "视频生成中");
+    window.setTimeout(() => setShotStatus(episode.id, id, "视频已生成"), 1500);
   }
 
   async function copyText(text: string, key: string) {
@@ -122,8 +144,15 @@ export default function EpisodeShotsPage() {
                 active={shot.id === selectedShot.id}
                 onSelect={() => setSelectedShotId(shot.id)}
                 onUpdate={(patch) => updateShot(episode.id, shot.id, patch)}
-                onGenerateImage={() => generateShot(shot.id)}
-                onGenerateVideo={() => generateShot(shot.id)}
+                onGenerateImage={() => generateImage(shot.id)}
+                onGenerateVideo={() => generateVideo(shot.id)}
+                onRegeneratePrompts={() =>
+                  updateShot(episode.id, shot.id, {
+                    imagePrompt: `${shot.imagePrompt}, regenerated still-frame option`,
+                    videoPrompt: `${shot.videoPrompt}, regenerated camera movement option`,
+                    status: "未生成",
+                  })
+                }
                 onCopyImage={() => copyText(shot.imagePrompt, `${shot.id}-image`)}
                 onCopyVideo={() => copyText(shot.videoPrompt, `${shot.id}-video`)}
                 copied={copied}
@@ -143,7 +172,7 @@ export default function EpisodeShotsPage() {
                   Shot {selectedShot.index} · {selectedShot.duration}
                 </p>
               </div>
-              <Badge tone={selectedShot.status === "已生成" ? "green" : selectedShot.status === "生成中" ? "blue" : "neutral"}>
+              <Badge tone={shotTone(selectedShot.status)}>
                 {selectedShot.status}
               </Badge>
             </div>
@@ -151,11 +180,17 @@ export default function EpisodeShotsPage() {
               <div className="aspect-[9/16] rounded-lg bg-[radial-gradient(circle_at_30%_12%,rgba(14,165,233,.7),transparent_24%),linear-gradient(160deg,#111827_0%,#334155_50%,#020617_100%)] p-5 text-white">
                 <div className="flex h-full flex-col justify-between">
                   <div>
-                    <Badge tone="dark">EP 01 · Shot {selectedShot.index}</Badge>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge tone="dark">EP {episode.episodeNumber} · Shot {selectedShot.index}</Badge>
+                      <Badge tone={shotTone(selectedShot.status)}>{previewStatusLabel(selectedShot.status)}</Badge>
+                    </div>
                     <h3 className="cn-title mt-5 text-2xl text-[#fff7ea]">{selectedShot.scene}</h3>
                     <p className="mt-3 text-sm leading-7 text-[#e8dcca]">{selectedShot.action}</p>
                   </div>
                   <div className="rounded-lg bg-white/12 p-4 backdrop-blur-md ring-1 ring-white/15">
+                    <p className="mb-3 border-b border-white/15 pb-3 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#f7a083]">
+                      {previewStatusLabel(selectedShot.status)}
+                    </p>
                     <p className="text-xs font-semibold text-slate-300">Video Prompt</p>
                     <p className="prompt-text mt-2 text-[#fff7ea]">{selectedShot.videoPrompt}</p>
                   </div>
@@ -194,6 +229,7 @@ function ShotEditor({
   onUpdate,
   onGenerateImage,
   onGenerateVideo,
+  onRegeneratePrompts,
   onCopyImage,
   onCopyVideo,
 }: {
@@ -206,16 +242,19 @@ function ShotEditor({
   onUpdate: (patch: Partial<EditableShot>) => void;
   onGenerateImage: () => void;
   onGenerateVideo: () => void;
+  onRegeneratePrompts: () => void;
   onCopyImage: () => void;
   onCopyVideo: () => void;
 }) {
+  const isGenerating = shot.status.includes("生成中");
+
   return (
     <Panel className={`p-4 transition ${active ? "border-sky-300 ring-4 ring-sky-100" : ""}`}>
       <button type="button" onClick={onSelect} className="w-full text-left">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Badge tone={active ? "blue" : "neutral"}>Shot {shot.index}</Badge>
-            <Badge tone={shot.status === "已生成" ? "green" : shot.status === "生成中" ? "blue" : "neutral"}>
+            <Badge tone={shotTone(shot.status)}>
               {shot.status}
             </Badge>
           </div>
@@ -276,9 +315,15 @@ function ShotEditor({
         />
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
-        <ShotButton onClick={onGenerateImage}>生成图片</ShotButton>
-        <ShotButton onClick={onGenerateVideo}>生成视频</ShotButton>
-        <ShotButton onClick={() => onUpdate({ status: "未生成" })}>重新生成提示词</ShotButton>
+        <ShotButton onClick={onGenerateImage}>
+          {shot.status === "图片生成中" ? "图片生成中..." : "生成图片"}
+        </ShotButton>
+        <ShotButton onClick={onGenerateVideo}>
+          {shot.status === "视频生成中" ? "视频生成中..." : "生成视频"}
+        </ShotButton>
+        <ShotButton onClick={onRegeneratePrompts}>
+          {isGenerating ? "生成中..." : "重新生成提示词"}
+        </ShotButton>
         <ShotButton onClick={onCopyImage}>{copied === `${shot.id}-image` ? "已复制" : "复制图片提示词"}</ShotButton>
         <ShotButton onClick={onCopyVideo}>{copied === `${shot.id}-video` ? "已复制" : "复制视频提示词"}</ShotButton>
       </div>

@@ -1,22 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { AppShell, Badge, Icon, PageHeader, Panel } from "@/components/workspace";
-import mockProject from "@/data/mock-project.json";
-import type { AiGenerationResult } from "@/types/project";
+import { useEffect, useRef, useState } from "react";
+import { AppShell, Badge, DraftStatus, Icon, PageHeader, Panel } from "@/components/workspace";
+import { useProjectStore } from "@/hooks/useProjectStore";
 
-const data = mockProject as AiGenerationResult;
 const tabs = ["上传文件", "粘贴文本", "AI 生成"] as const;
+const analysisSteps = ["", "正在解析剧本", "正在提取人物关系", "正在生成剧本大纲"];
 
 export default function OneClickNewPage() {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("上传文件");
-  const [status, setStatus] = useState<"idle" | "analyzing" | "done">("idle");
+  const { project, saveStatus, updateOneClick, resetProject } = useProjectStore();
+  const timersRef = useRef<number[]>([]);
+  const status = project.oneClick?.analysisStatus ?? "idle";
+  const analysisStep = project.oneClick?.analysisStep ?? 0;
 
   function startAnalyze() {
-    setStatus("analyzing");
-    window.setTimeout(() => setStatus("done"), 1400);
+    timersRef.current.forEach((timer) => window.clearTimeout(timer));
+    updateOneClick({ analysisStatus: "analyzing", analysisStep: 1 });
+    timersRef.current = [
+      window.setTimeout(() => updateOneClick({ analysisStep: 2 }), 800),
+      window.setTimeout(() => updateOneClick({ analysisStep: 3 }), 1600),
+      window.setTimeout(
+        () => updateOneClick({ analysisStatus: "done", analysisStep: 3 }),
+        2400,
+      ),
+    ];
   }
+
+  useEffect(() => {
+    return () => {
+      timersRef.current.forEach((timer) => window.clearTimeout(timer));
+    };
+  }, []);
 
   return (
     <AppShell>
@@ -47,6 +63,7 @@ export default function OneClickNewPage() {
             currentStep={1}
           />
         </div>
+        <DraftStatus saveStatus={saveStatus} onReset={resetProject} />
 
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <Panel className="p-5">
@@ -81,13 +98,29 @@ export default function OneClickNewPage() {
                 <div>
                   <p className="echo-label text-[10px] text-[#607880]">SCRIPT SOURCE</p>
                   <p className="mt-5 text-lg font-semibold text-[#173f47]">
-                    {activeTab === "AI 生成" ? data.input.theme : "拖拽文件到此处，或点击选择"}
+                    {activeTab === "AI 生成" ? project.input.theme : "拖拽文件到此处，或点击选择"}
                   </p>
                   <p className="mt-3 max-w-2xl text-sm leading-7 text-[#59727a]">
                     {activeTab === "AI 生成"
-                      ? data.input.requirement
+                      ? project.input.requirement
                       : "支持 .txt .docx .pdf。当前仅模拟上传状态，不会读取真实文件。"}
                   </p>
+                  {status === "analyzing" ? (
+                    <div className="mt-6 space-y-2">
+                      {[1, 2, 3].map((step) => (
+                        <div key={step} className="flex items-center gap-3">
+                          <span
+                            className={`h-2 w-2 rounded-full ${
+                              analysisStep >= step ? "bg-[#f28c6a]" : "bg-[#184b52]/20"
+                            }`}
+                          />
+                          <span className="meta-text">
+                            {analysisSteps[step]}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
                 <div className="mt-6 flex items-center justify-between border-t border-[#184b52]/15 pt-4">
                   <span className="echo-label text-[10px] text-[#9aa4a6]">DF-001 · PRINTED IN BLUE</span>
@@ -97,7 +130,7 @@ export default function OneClickNewPage() {
                     disabled={status === "analyzing"}
                     className="inline-flex h-10 items-center justify-center rounded-md border border-[#f28c6a] px-5 text-sm font-semibold text-[#f28c6a] transition hover:bg-[#f28c6a] hover:text-[#fff7ea] disabled:cursor-wait disabled:opacity-70"
                   >
-                    {status === "analyzing" ? "分析中..." : "开始分析 →"}
+                    {status === "analyzing" ? analysisSteps[analysisStep] : "开始分析 →"}
                   </button>
                 </div>
               </div>
@@ -120,19 +153,19 @@ export default function OneClickNewPage() {
                 <div>
                   <p className="text-xs font-semibold text-slate-400">项目</p>
                   <p className="mt-1 text-sm font-semibold text-slate-950">
-                    {data.project.title}
+                    {project.project.title}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-400">故事简介</p>
                   <p className="body-copy mt-1">
-                    {data.outline?.summary}
+                    {project.outline?.summary}
                   </p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-400">主要冲突</p>
                   <p className="body-copy mt-1">
-                    {data.outline?.mainConflict}
+                    {project.outline?.mainConflict}
                   </p>
                 </div>
               </div>

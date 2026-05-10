@@ -49,7 +49,7 @@ export default function AssetsPage() {
         ? "missing"
         : character.source === "本地上传"
           ? "local"
-          : character.source === "从资产库引用"
+          : character.source === "资产库引用" || character.source === "从资产库引用"
             ? "library"
             : "ai",
   }));
@@ -58,7 +58,7 @@ export default function AssetsPage() {
     imageState:
       scene.source === "本地上传"
         ? "local"
-        : scene.source === "从资产库引用"
+        : scene.source === "资产库引用" || scene.source === "从资产库引用"
           ? "library"
           : "ai",
   }));
@@ -73,18 +73,52 @@ export default function AssetsPage() {
     if (libraryPicker.kind === "character") {
       updateCharacter(libraryPicker.id, {
         portraitPrompt: prompt,
-        source: "从资产库引用",
+        source: "资产库引用",
         status: "已编辑",
+        imageStatus: "已生成",
       });
     } else {
       updateScene(libraryPicker.id, {
         visualPrompt: prompt,
-        source: "从资产库引用",
+        source: "资产库引用",
         status: "已编辑",
+        imageStatus: "已生成",
       });
     }
     setLibraryPicker(null);
   }
+
+  function generateCharacterImage(character: CharacterState) {
+    updateCharacter(character.id, {
+      source: "AI 生成",
+      status: "已编辑",
+      imageStatus: "生成中",
+    });
+    window.setTimeout(() => {
+      updateCharacter(character.id, {
+        portraitPrompt: `${character.portraitPrompt ?? character.costumePrompt}, generated character key visual`,
+        imageStatus: "已生成",
+      });
+    }, 1500);
+  }
+
+  function generateSceneImage(scene: SceneState) {
+    updateScene(scene.id, {
+      source: "AI 生成",
+      status: "已编辑",
+      imageStatus: "生成中",
+    });
+    window.setTimeout(() => {
+      updateScene(scene.id, {
+        visualPrompt: `${scene.visualPrompt}, generated environment key visual`,
+        imageStatus: "已生成",
+      });
+    }, 1500);
+  }
+
+  const primaryAssetsConfirmed =
+    characters.slice(0, 2).every((character) => character.status === "已锁定") &&
+    scenes.slice(0, 2).every((scene) => scene.status === "已锁定");
 
   return (
     <AppShell>
@@ -132,6 +166,7 @@ export default function AssetsPage() {
                 index={index}
                 onUpdate={(patch) => updateCharacter(character.id, patch)}
                 onLock={() => setCharacterStatus(character.id, "已锁定")}
+                onGenerateImage={() => generateCharacterImage(character)}
                 onPickLibrary={() => setLibraryPicker({ kind: "character", id: character.id })}
               />
             ))}
@@ -144,7 +179,17 @@ export default function AssetsPage() {
               <Panel key={scene.id} className="p-5">
                 <div className="grid gap-5 md:grid-cols-[180px_1fr]">
                   <AssetPlaceholder
-                    label={scene.imageState === "local" ? "本地场景图" : scene.imageState === "library" ? "资产库场景" : scene.name}
+                    label={
+                      scene.imageStatus === "生成中"
+                        ? "生成中..."
+                        : scene.imageStatus === "已生成"
+                          ? "已生成场景图"
+                          : scene.imageState === "local"
+                            ? "本地场景图"
+                            : scene.imageState === "library"
+                              ? "资产库场景"
+                              : scene.name
+                    }
                     variant={scene.imageState === "local" ? "green" : "slate"}
                   />
                   <div>
@@ -178,8 +223,10 @@ export default function AssetsPage() {
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2 border-t border-[#184b52]/15 pt-4">
-                  <AssetButton onClick={() => updateScene(scene.id, { source: "AI 生成", status: "已编辑" })}>AI 生成场景图</AssetButton>
-                  <AssetButton onClick={() => updateScene(scene.id, { source: "本地上传", status: "已编辑" })}>本地上传</AssetButton>
+                  <AssetButton primary onClick={() => generateSceneImage(scene)}>
+                    {scene.imageStatus === "生成中" ? "生成中..." : "AI 生成场景图"}
+                  </AssetButton>
+                  <AssetButton onClick={() => updateScene(scene.id, { source: "本地上传", status: "已编辑", imageStatus: "已生成" })}>本地上传</AssetButton>
                   <AssetButton onClick={() => setLibraryPicker({ kind: "scene", id: scene.id })}>从资产库引用</AssetButton>
                   <AssetButton onClick={() => updateScene(scene.id, { status: "已编辑" })}>编辑</AssetButton>
                   <AssetButton onClick={() => updateScene(scene.id, { source: "AI 生成", status: "已编辑", visualPrompt: `${scene.visualPrompt}, refined environment concept` })}>重新生成</AssetButton>
@@ -229,7 +276,7 @@ export default function AssetsPage() {
           </Link>
           <Link
             href="/one-click/project-demo/episodes"
-            className="tool-btn tool-btn-primary"
+            className={`tool-btn ${primaryAssetsConfirmed ? "tool-btn-primary" : ""}`}
           >
             确认角色与场景，生成分集 →
           </Link>
@@ -277,12 +324,14 @@ function CharacterCard({
   index,
   onUpdate,
   onLock,
+  onGenerateImage,
   onPickLibrary,
 }: {
   character: CharacterState;
   index: number;
   onUpdate: (patch: Partial<CharacterAsset>) => void;
   onLock: () => void;
+  onGenerateImage: () => void;
   onPickLibrary: () => void;
 }) {
   return (
@@ -292,7 +341,11 @@ function CharacterCard({
           <div className="rounded-lg border border-[#184b52]/15 bg-[#fff7ea] p-3 shadow-sm">
             <AssetPlaceholder
               label={
-                character.imageState === "missing"
+                character.imageStatus === "生成中"
+                  ? "生成中..."
+                  : character.imageStatus === "已生成"
+                    ? "已生成设定图"
+                    : character.imageState === "missing"
                   ? "缺少设定图"
                   : character.imageState === "local"
                     ? "本地图片"
@@ -374,8 +427,10 @@ function CharacterCard({
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2 border-t border-[#184b52]/15 pt-4">
-        <AssetButton primary onClick={() => onUpdate({ source: "AI 生成", status: "已编辑" })}>AI 生成设定图</AssetButton>
-        <AssetButton onClick={() => onUpdate({ source: "本地上传", status: "已编辑" })}>从本地上传</AssetButton>
+        <AssetButton primary onClick={onGenerateImage}>
+          {character.imageStatus === "生成中" ? "生成中..." : "AI 生成设定图"}
+        </AssetButton>
+        <AssetButton onClick={() => onUpdate({ source: "本地上传", status: "已编辑", imageStatus: "已生成" })}>从本地上传</AssetButton>
         <AssetButton onClick={onPickLibrary}>从资产库引用</AssetButton>
         <AssetButton onClick={() => onUpdate({ status: "已编辑" })}>编辑文字设定</AssetButton>
         <AssetButton onClick={() => onUpdate({ source: "AI 生成", status: "已编辑", portraitPrompt: `${character.portraitPrompt ?? character.costumePrompt}, refined production concept` })}>重新生成</AssetButton>

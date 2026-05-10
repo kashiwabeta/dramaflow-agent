@@ -48,6 +48,7 @@ export default function EpisodesPage() {
               episode={episode}
               onUpdate={(patch) => updateEpisode(episode.id, patch)}
               onGenerate={() => generateStoryboard(episode.id)}
+              onReset={() => setEpisodeStatus(episode.id, "待生成分镜")}
             />
           ))}
         </div>
@@ -60,10 +61,12 @@ function EpisodeCard({
   episode,
   onUpdate,
   onGenerate,
+  onReset,
 }: {
   episode: Episode;
   onUpdate: (patch: Partial<Episode>) => void;
   onGenerate: () => void;
+  onReset: () => void;
 }) {
   const canView = episode.status === "分镜已生成" || episode.status === "已完成";
   return (
@@ -99,25 +102,25 @@ function EpisodeCard({
           type="button"
           onClick={onGenerate}
           disabled={episode.status === "分镜生成中"}
-          className="inline-flex h-9 items-center justify-center rounded-lg bg-slate-950 px-3 text-xs font-semibold text-white transition hover:bg-slate-800 disabled:cursor-wait disabled:opacity-70"
+          className="tool-btn tool-btn-primary disabled:cursor-wait disabled:opacity-70"
         >
-          {episode.status === "分镜生成中" ? "生成中..." : "生成分镜提示词"}
+          {episode.status === "分镜生成中" ? "生成中..." : "生成分镜提示词 →"}
         </button>
         {canView ? (
           <Link
             href={`/one-click/project-demo/episodes/${episode.episodeNumber}`}
-            className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+            className="tool-btn"
           >
-            查看分镜
+            查看分镜 →
           </Link>
         ) : null}
-        <button className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">
+        <button className="tool-btn">
           编辑本集剧情
         </button>
         <button
           type="button"
-          onClick={onGenerate}
-          className="inline-flex h-9 items-center justify-center rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+          onClick={onReset}
+          className="tool-btn"
         >
           重新生成本集
         </button>

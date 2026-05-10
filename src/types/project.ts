@@ -10,11 +10,14 @@ export type CharacterAsset = {
   portraitPrompt?: string;
   source?: AssetSource;
   status?: AssetStatus;
+  imageStatus?: MockGenerationStatus;
 };
 
-export type AssetSource = "AI 生成" | "本地上传" | "从资产库引用" | "角色资产库" | "场景资产库";
+export type AssetSource = "AI 生成" | "本地上传" | "资产库引用" | "从资产库引用" | "角色资产库" | "场景资产库";
 
 export type AssetStatus = "待确认" | "已编辑" | "已锁定" | "缺少设定图";
+
+export type MockGenerationStatus = "未生成" | "生成中" | "已生成" | "失败";
 
 export type SceneAsset = {
   id: string;
@@ -23,6 +26,7 @@ export type SceneAsset = {
   visualPrompt: string;
   source: AssetSource;
   status: AssetStatus;
+  imageStatus?: MockGenerationStatus;
 };
 
 export type PropAsset = {
@@ -54,7 +58,7 @@ export type Shot = {
   videoPrompt: string;
   characterIds?: string[];
   sceneId?: string;
-  status?: "未生成" | "生成中" | "已生成" | "失败";
+  status?: "未生成" | "生成中" | "已生成" | "失败" | "图片生成中" | "图片已生成" | "视频生成中" | "视频已生成";
 };
 
 export type Episode = {
@@ -86,6 +90,10 @@ export type AiGenerationResult = {
     mainConflict: string;
     relationships: string;
     episodeSuggestions: string[];
+  };
+  oneClick?: {
+    analysisStatus: "idle" | "analyzing" | "done";
+    analysisStep: 0 | 1 | 2 | 3;
   };
   input: {
     theme: string;
