@@ -7,6 +7,7 @@ import {
   AssetPlaceholder,
   Badge,
   DraftStatus,
+  PageHeader,
   Panel,
 } from "@/components/workspace";
 import { useProjectStore } from "@/hooks/useProjectStore";
@@ -14,7 +15,9 @@ import type {
   AssetSource,
   AssetStatus,
   CharacterAsset,
+  PropAsset,
   SceneAsset,
+  StyleAsset,
 } from "@/types/project";
 
 type AssetTab = "角色" | "场景" | "道具" | "风格";
@@ -26,11 +29,58 @@ type CharacterState = CharacterAsset & {
 };
 
 type SceneState = SceneAsset & {
+  status: AssetStatus;
   imageState: "ai" | "local" | "library";
+};
+
+const tabs: AssetTab[] = ["角色", "场景", "道具", "风格"];
+
+const fallbackLibrary = {
+  characters: [
+    {
+      id: "fallback-char-01",
+      name: "雨夜女主档案",
+      prompt: "library character portrait, rain noir heroine, sharp eyes, black trench coat",
+    },
+    {
+      id: "fallback-char-02",
+      name: "克制投资人档案",
+      prompt: "library character portrait, restrained investor, charcoal suit, premium office",
+    },
+    {
+      id: "fallback-char-03",
+      name: "甜美反派档案",
+      prompt: "library character portrait, ivory knit suit, pearl earrings, ambiguous smile",
+    },
+  ],
+  scenes: [
+    {
+      id: "fallback-scene-01",
+      name: "雨夜会议室",
+      prompt: "library scene, glass boardroom, rainy city reflections, projection screen glow",
+    },
+    {
+      id: "fallback-scene-02",
+      name: "地下车库",
+      prompt: "library scene, underground parking exit, wet concrete, cinematic headlights",
+    },
+    {
+      id: "fallback-scene-03",
+      name: "高层办公室",
+      prompt: "library scene, executive office at night, muted wood, skyline, suspense lighting",
+    },
+  ],
 };
 
 export default function AssetsPage() {
   const [activeTab, setActiveTab] = useState<AssetTab>("角色");
+  const [expandedCharacterId, setExpandedCharacterId] = useState<string | null>(null);
+  const [expandedSceneId, setExpandedSceneId] = useState<string | null>(null);
+  const [libraryPicker, setLibraryPicker] = useState<
+    | { kind: "character"; id: string }
+    | { kind: "scene"; id: string }
+    | null
+  >(null);
   const {
     project,
     saveStatus,
@@ -40,6 +90,7 @@ export default function AssetsPage() {
     setSceneStatus,
     resetProject,
   } = useProjectStore();
+
   const characters: CharacterState[] = project.characters.map((character) => ({
     ...character,
     source: character.source ?? "AI 生成",
@@ -53,8 +104,10 @@ export default function AssetsPage() {
             ? "library"
             : "ai",
   }));
+
   const scenes: SceneState[] = (project.scenes ?? []).map((scene) => ({
     ...scene,
+    status: scene.status ?? "待确认",
     imageState:
       scene.source === "本地上传"
         ? "local"
@@ -62,11 +115,14 @@ export default function AssetsPage() {
           ? "library"
           : "ai",
   }));
-  const [libraryPicker, setLibraryPicker] = useState<
-    | { kind: "character"; id: string }
-    | { kind: "scene"; id: string }
-    | null
-  >(null);
+
+  const primaryAssetsReady =
+    characters
+      .slice(0, 2)
+      .some((character) => character.status === "已编辑" || character.status === "已锁定") &&
+    scenes
+      .slice(0, 2)
+      .some((scene) => scene.status === "已编辑" || scene.status === "已锁定");
 
   function chooseLibraryAsset(prompt: string) {
     if (!libraryPicker) return;
@@ -77,6 +133,7 @@ export default function AssetsPage() {
         status: "已编辑",
         imageStatus: "已生成",
       });
+      setExpandedCharacterId(libraryPicker.id);
     } else {
       updateScene(libraryPicker.id, {
         visualPrompt: prompt,
@@ -84,6 +141,7 @@ export default function AssetsPage() {
         status: "已编辑",
         imageStatus: "已生成",
       });
+      setExpandedSceneId(libraryPicker.id);
     }
     setLibraryPicker(null);
   }
@@ -91,401 +149,571 @@ export default function AssetsPage() {
   function generateCharacterImage(character: CharacterState) {
     updateCharacter(character.id, {
       source: "AI 生成",
-      status: "已编辑",
+      status: "生成中",
       imageStatus: "生成中",
     });
     window.setTimeout(() => {
       updateCharacter(character.id, {
         portraitPrompt: `${character.portraitPrompt ?? character.costumePrompt}, generated character key visual`,
+        source: "AI 生成",
+        status: "待确认",
         imageStatus: "已生成",
       });
+      setExpandedCharacterId(character.id);
     }, 1500);
   }
 
   function generateSceneImage(scene: SceneState) {
     updateScene(scene.id, {
       source: "AI 生成",
-      status: "已编辑",
+      status: "生成中",
       imageStatus: "生成中",
     });
     window.setTimeout(() => {
       updateScene(scene.id, {
         visualPrompt: `${scene.visualPrompt}, generated environment key visual`,
+        source: "AI 生成",
+        status: "待确认",
         imageStatus: "已生成",
       });
+      setExpandedSceneId(scene.id);
     }, 1500);
   }
-
-  const primaryAssetsConfirmed =
-    characters.slice(0, 2).every((character) => character.status === "已锁定") &&
-    scenes.slice(0, 2).every((scene) => scene.status === "已锁定");
 
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-7xl space-y-5 px-5 py-5">
-        <section className="paper-card rounded-lg border px-5 py-5 shadow-sm">
-          <div className="grid gap-4 lg:grid-cols-[1fr_320px] lg:items-end">
-            <div>
-              <p className="section-kicker">DRAMAFLOW AGENT</p>
-              <p className="meta-text mt-4 text-[#f28c6a]">02 CHARACTER / SCENE</p>
-              <h1 className="cn-title mt-2">角色与场景确认</h1>
-              <p className="body-copy mt-2 max-w-3xl">
-                确认当前剧本被 AI 拆解出的临时资产。这里不是完整资产库，只服务本次一键直出。
-              </p>
-            </div>
-            <div className="border-t border-[#184b52]/20 pt-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
-              <p className="section-kicker">TEMPORARY ASSETS</p>
-              <p className="body-copy mt-2">
-                角色、场景、道具和风格会在确认后进入分集视频生成链路。
-              </p>
-            </div>
-          </div>
-        </section>
-
+        <PageHeader
+          title="角色与场景确认"
+          description="确认 AI 从剧本中拆解出的角色、场景、道具与风格资产，之后用于分集与分镜生成。"
+          currentStep={2}
+        />
         <DraftStatus saveStatus={saveStatus} onReset={resetProject} />
 
-        <div className="flex flex-wrap gap-2">
-          {(["角色", "场景", "道具", "风格"] as AssetTab[]).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setActiveTab(tab)}
-              className={`echo-tab ${activeTab === tab ? "echo-tab-active" : ""}`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        <Panel className="p-3">
+          <div className="flex flex-wrap gap-2">
+            {tabs.map((tab, index) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setActiveTab(tab)}
+                className={`echo-tab ${activeTab === tab ? "echo-tab-active" : ""}`}
+              >
+                <span className="mr-2 font-mono text-[#f28c6a]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                {tab}
+              </button>
+            ))}
+          </div>
+        </Panel>
 
         {activeTab === "角色" ? (
-          <div className="grid gap-4 xl:grid-cols-2">
+          <AssetListShell
+            kicker="CHARACTER ASSETS"
+            title="当前项目角色确认列表"
+            description="逐项确认角色设定图、人物定位和视觉提示词。点击编辑展开字段，锁定后进入分集与分镜引用。"
+          >
             {characters.map((character, index) => (
-              <CharacterCard
+              <CharacterAssetRow
                 key={character.id}
                 character={character}
                 index={index}
+                expanded={expandedCharacterId === character.id}
+                onToggle={() =>
+                  setExpandedCharacterId((current) =>
+                    current === character.id ? null : character.id,
+                  )
+                }
                 onUpdate={(patch) => updateCharacter(character.id, patch)}
-                onLock={() => setCharacterStatus(character.id, "已锁定")}
                 onGenerateImage={() => generateCharacterImage(character)}
+                onLocalUpload={() => {
+                  updateCharacter(character.id, {
+                    source: "本地上传",
+                    status: "已编辑",
+                    imageStatus: "已生成",
+                  });
+                  setExpandedCharacterId(character.id);
+                }}
                 onPickLibrary={() => setLibraryPicker({ kind: "character", id: character.id })}
+                onLock={() => setCharacterStatus(character.id, "已锁定")}
               />
             ))}
-          </div>
+          </AssetListShell>
         ) : null}
 
         {activeTab === "场景" ? (
-          <div className="grid gap-4 xl:grid-cols-2">
-            {scenes.map((scene) => (
-              <Panel key={scene.id} className="p-5">
-                <div className="grid gap-5 md:grid-cols-[180px_1fr]">
-                  <AssetPlaceholder
-                    label={
-                      scene.imageStatus === "生成中"
-                        ? "生成中..."
-                        : scene.imageStatus === "已生成"
-                          ? "已生成场景图"
-                          : scene.imageState === "local"
-                            ? "本地场景图"
-                            : scene.imageState === "library"
-                              ? "资产库场景"
-                              : scene.name
-                    }
-                    variant={scene.imageState === "local" ? "green" : "slate"}
-                  />
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <input
-                        value={scene.name}
-                        onChange={(event) =>
-                          updateScene(scene.id, {
-                            name: event.target.value,
-                            status: "已编辑",
-                          })
-                        }
-                        className="cn-title w-full rounded-md border border-transparent bg-transparent px-0 py-1 text-lg outline-none focus:border-[#f28c6a]/60 focus:bg-[#fff7ea]/60"
-                      />
-                      <Badge tone="neutral">{scene.source}</Badge>
-                      <Badge tone={scene.status === "已锁定" ? "green" : "amber"}>
-                        {scene.status}
-                      </Badge>
-                    </div>
-                    <textarea
-                      value={scene.description}
-                      onChange={(event) => updateScene(scene.id, { description: event.target.value, status: "已编辑" })}
-                      className="body-copy mt-3 min-h-20 w-full rounded-lg border border-slate-200 bg-slate-50 p-3 outline-none focus:border-sky-300 focus:bg-white"
-                    />
-                    <p className="section-kicker mt-3">VISUAL PROMPT</p>
-                    <textarea
-                      value={scene.visualPrompt}
-                      onChange={(event) => updateScene(scene.id, { visualPrompt: event.target.value, status: "已编辑" })}
-                      className="prompt-text prompt-box mt-2 min-h-24 w-full rounded-lg p-3 outline-none"
-                    />
-                  </div>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2 border-t border-[#184b52]/15 pt-4">
-                  <AssetButton primary onClick={() => generateSceneImage(scene)}>
-                    {scene.imageStatus === "生成中" ? "生成中..." : "AI 生成场景图"}
-                  </AssetButton>
-                  <AssetButton onClick={() => updateScene(scene.id, { source: "本地上传", status: "已编辑", imageStatus: "已生成" })}>本地上传</AssetButton>
-                  <AssetButton onClick={() => setLibraryPicker({ kind: "scene", id: scene.id })}>从资产库引用</AssetButton>
-                  <AssetButton onClick={() => updateScene(scene.id, { status: "已编辑" })}>编辑</AssetButton>
-                  <AssetButton onClick={() => updateScene(scene.id, { source: "AI 生成", status: "已编辑", visualPrompt: `${scene.visualPrompt}, refined environment concept` })}>重新生成</AssetButton>
-                  <AssetButton onClick={() => setSceneStatus(scene.id, "已锁定")}>锁定</AssetButton>
-                </div>
-              </Panel>
+          <AssetListShell
+            kicker="SCENE ASSETS"
+            title="当前项目场景确认列表"
+            description="确认剧本拆解出的核心空间，后续镜头会引用这里的视觉提示词和场景图状态。"
+          >
+            {scenes.map((scene, index) => (
+              <SceneAssetRow
+                key={scene.id}
+                scene={scene}
+                index={index}
+                expanded={expandedSceneId === scene.id}
+                onToggle={() =>
+                  setExpandedSceneId((current) =>
+                    current === scene.id ? null : scene.id,
+                  )
+                }
+                onUpdate={(patch) => updateScene(scene.id, patch)}
+                onGenerateImage={() => generateSceneImage(scene)}
+                onLocalUpload={() => {
+                  updateScene(scene.id, {
+                    source: "本地上传",
+                    status: "已编辑",
+                    imageStatus: "已生成",
+                  });
+                  setExpandedSceneId(scene.id);
+                }}
+                onPickLibrary={() => setLibraryPicker({ kind: "scene", id: scene.id })}
+                onLock={() => setSceneStatus(scene.id, "已锁定")}
+              />
             ))}
-          </div>
+          </AssetListShell>
         ) : null}
 
         {activeTab === "道具" ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {(project.props ?? []).map((prop) => (
-              <Panel key={prop.id} className="p-4">
-                <AssetPlaceholder label={prop.name} variant="amber" />
-                <h2 className="mt-4 text-base font-semibold text-slate-950">{prop.name}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-500">{prop.description}</p>
-                <p className="mt-3 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-                  {prop.visualPrompt}
-                </p>
-              </Panel>
-            ))}
-          </div>
+          <CompactMockGrid
+            kicker="PROP ASSETS"
+            items={project.props ?? []}
+            renderMeta={(prop) => prop.source}
+          />
         ) : null}
 
         {activeTab === "风格" ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {(project.styles ?? []).map((style) => (
-              <Panel key={style.id} className="p-4">
-                <AssetPlaceholder label={style.name} variant="slate" />
-                <h2 className="mt-4 text-base font-semibold text-slate-950">{style.name}</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-500">{style.description}</p>
-                <p className="mt-3 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-600">
-                  {style.visualPrompt}
-                </p>
-              </Panel>
-            ))}
-          </div>
+          <CompactMockGrid
+            kicker="STYLE TEMPLATES"
+            items={project.styles ?? []}
+            renderMeta={(style) => style.status}
+          />
         ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-          <Link
-            href="/one-click/new"
-            className="tool-btn"
-          >
-            返回剧本大纲
+          <Link href="/one-click/new" className="tool-btn">
+            返回上一步
           </Link>
           <Link
             href="/one-click/project-demo/episodes"
-            className={`tool-btn ${primaryAssetsConfirmed ? "tool-btn-primary" : ""}`}
+            className={`tool-btn ${primaryAssetsReady ? "tool-btn-primary" : ""}`}
           >
             确认角色与场景，生成分集 →
           </Link>
         </div>
 
         {libraryPicker ? (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/30 p-4">
-            <Panel className="w-full max-w-xl p-5">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-semibold text-slate-950">选择资产库素材</h2>
-                <button
-                  type="button"
-                  onClick={() => setLibraryPicker(null)}
-                  className="text-sm font-semibold text-slate-500 hover:text-slate-900"
-                >
-                  关闭
-                </button>
-              </div>
-              <div className="mt-4 grid gap-3">
-                {(libraryPicker.kind === "character"
-                  ? project.assetLibrary?.characters
-                  : project.assetLibrary?.scenes
-                )?.map((asset) => (
-                  <button
-                    key={asset.id}
-                    type="button"
-                    onClick={() => chooseLibraryAsset(asset.prompt)}
-                    className="rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-sky-200 hover:bg-slate-50"
-                  >
-                    <p className="text-sm font-semibold text-slate-950">{asset.name}</p>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">{asset.prompt}</p>
-                  </button>
-                ))}
-              </div>
-            </Panel>
-          </div>
+          <AssetPickerModal
+            kind={libraryPicker.kind}
+            assets={
+              libraryPicker.kind === "character"
+                ? [
+                    ...(project.assetLibrary?.characters ?? []),
+                    ...fallbackLibrary.characters,
+                  ].slice(0, 3)
+                : [
+                    ...(project.assetLibrary?.scenes ?? []),
+                    ...fallbackLibrary.scenes,
+                  ].slice(0, 3)
+            }
+            onChoose={chooseLibraryAsset}
+            onClose={() => setLibraryPicker(null)}
+          />
         ) : null}
       </div>
     </AppShell>
   );
 }
 
-function CharacterCard({
-  character,
-  index,
-  onUpdate,
-  onLock,
-  onGenerateImage,
-  onPickLibrary,
+function AssetListShell({
+  kicker,
+  title,
+  description,
+  children,
 }: {
-  character: CharacterState;
-  index: number;
-  onUpdate: (patch: Partial<CharacterAsset>) => void;
-  onLock: () => void;
-  onGenerateImage: () => void;
-  onPickLibrary: () => void;
+  kicker: string;
+  title: string;
+  description: string;
+  children: React.ReactNode;
 }) {
   return (
-    <Panel className="p-5">
-      <div className="grid gap-5 md:grid-cols-[190px_1fr]">
-        <div>
-          <div className="rounded-lg border border-[#184b52]/15 bg-[#fff7ea] p-3 shadow-sm">
-            <AssetPlaceholder
-              label={
-                character.imageStatus === "生成中"
-                  ? "生成中..."
-                  : character.imageStatus === "已生成"
-                    ? "已生成设定图"
-                    : character.imageState === "missing"
-                  ? "缺少设定图"
-                  : character.imageState === "local"
-                    ? "本地图片"
-                    : character.imageState === "library"
-                      ? "资产库图"
-                      : character.name
-              }
-              variant={character.imageState === "local" ? "green" : "blue"}
-            />
+    <Panel className="overflow-hidden">
+      <div className="border-b border-[#184b52]/15 bg-[#fff7ea]/55 px-4 py-4">
+        <p className="section-kicker">{kicker}</p>
+        <div className="mt-2 flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="cn-title text-xl">{title}</h2>
+            <p className="body-copy mt-1 max-w-3xl">{description}</p>
           </div>
-          <div className="mt-3 flex items-center justify-between border-t border-[#184b52]/20 pt-3">
-            <span className="font-mono text-3xl font-semibold tracking-[0.14em] text-[#f28c6a]">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <span className="section-kicker text-[#607880]">CHARACTER FILE</span>
-          </div>
-        </div>
-
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <input
-                value={character.name}
-                onChange={(event) =>
-                  onUpdate({ name: event.target.value, status: "已编辑" })
-                }
-                className="cn-title w-full rounded-md border border-transparent bg-transparent px-0 py-1 text-xl outline-none focus:border-[#f28c6a]/60 focus:bg-[#fff7ea]/60"
-              />
-              <div className="mt-2 flex flex-wrap gap-2">
-                <input
-                  value={character.role}
-                  onChange={(event) =>
-                    onUpdate({ role: event.target.value, status: "已编辑" })
-                  }
-                  className="meta-text rounded-md border border-[#184b52]/15 bg-[#fff7ea]/55 px-2 py-1 outline-none focus:border-[#f28c6a]/60"
-                />
-                <Badge tone={character.status === "已锁定" ? "green" : "amber"}>
-                  {character.status}
-                </Badge>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-2 md:grid-cols-2">
-            <EditableMetaItem
-              label="AGE"
-              value={character.age}
-              onChange={(value) => onUpdate({ age: value, status: "已编辑" })}
-            />
-            <EditableMetaItem
-              label="PERSONALITY"
-              value={character.archetype}
-              onChange={(value) => onUpdate({ archetype: value, status: "已编辑" })}
-            />
-            <MetaItem label="SOURCE" value={character.source} />
-            <EditableMetaItem
-              label="LOOK"
-              value={character.visualStyle}
-              wide
-              multiline
-              onChange={(value) => onUpdate({ visualStyle: value, status: "已编辑" })}
-            />
-          </div>
-
-          <div className="mt-4">
-            <p className="section-kicker">VISUAL PROMPT</p>
-            <textarea
-              value={character.portraitPrompt ?? character.costumePrompt}
-              onChange={(event) =>
-                onUpdate({
-                  portraitPrompt: event.target.value,
-                  status: "已编辑",
-                })
-              }
-              className="prompt-text prompt-box mt-2 min-h-28 w-full rounded-lg p-3 outline-none"
-            />
-          </div>
+          <p className="meta-text text-[#607880]">PROJECT TEMPORARY ASSETS</p>
         </div>
       </div>
-
-      <div className="mt-5 flex flex-wrap gap-2 border-t border-[#184b52]/15 pt-4">
-        <AssetButton primary onClick={onGenerateImage}>
-          {character.imageStatus === "生成中" ? "生成中..." : "AI 生成设定图"}
-        </AssetButton>
-        <AssetButton onClick={() => onUpdate({ source: "本地上传", status: "已编辑", imageStatus: "已生成" })}>从本地上传</AssetButton>
-        <AssetButton onClick={onPickLibrary}>从资产库引用</AssetButton>
-        <AssetButton onClick={() => onUpdate({ status: "已编辑" })}>编辑文字设定</AssetButton>
-        <AssetButton onClick={() => onUpdate({ source: "AI 生成", status: "已编辑", portraitPrompt: `${character.portraitPrompt ?? character.costumePrompt}, refined production concept` })}>重新生成</AssetButton>
-        <AssetButton onClick={onLock}>锁定角色</AssetButton>
-      </div>
+      <div className="divide-y divide-[#184b52]/12">{children}</div>
     </Panel>
   );
 }
 
-function EditableMetaItem({
+function CharacterAssetRow({
+  character,
+  index,
+  expanded,
+  onToggle,
+  onUpdate,
+  onGenerateImage,
+  onLocalUpload,
+  onPickLibrary,
+  onLock,
+}: {
+  character: CharacterState;
+  index: number;
+  expanded: boolean;
+  onToggle: () => void;
+  onUpdate: (patch: Partial<CharacterAsset>) => void;
+  onGenerateImage: () => void;
+  onLocalUpload: () => void;
+  onPickLibrary: () => void;
+  onLock: () => void;
+}) {
+  const prompt = character.portraitPrompt ?? character.costumePrompt;
+  return (
+    <div className={`bg-[#fffaf0]/70 transition ${character.status === "已锁定" ? "bg-[#f5f0df]" : ""}`}>
+      <div className="grid gap-4 px-4 py-4 lg:grid-cols-[96px_minmax(0,1fr)_auto] lg:items-center">
+        <Thumbnail
+          label={assetImageLabel(character.name, character.imageState, character.imageStatus)}
+          variant={character.imageState === "local" ? "green" : "blue"}
+        />
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f28c6a]">
+              CHAR {String(index + 1).padStart(2, "0")}
+            </span>
+            <Badge tone={statusTone(character.status)}>{character.status}</Badge>
+            <Badge tone="neutral">{character.source}</Badge>
+          </div>
+          <div className="mt-2 flex flex-col gap-1 md:flex-row md:items-baseline md:gap-3">
+            <h3 className="cn-title text-lg">{character.name}</h3>
+            <p className="meta-text text-[#607880]">
+              {character.role} · {character.age} 岁
+            </p>
+          </div>
+          <p className="body-copy mt-2 line-clamp-2">
+            {character.motivation || character.archetype}
+          </p>
+        </div>
+        <RowActions
+          generating={character.status === "生成中" || character.imageStatus === "生成中"}
+          generateLabel="AI 生成设定图"
+          editLabel={expanded ? "收起" : "编辑"}
+          onGenerate={onGenerateImage}
+          onLocalUpload={onLocalUpload}
+          onPickLibrary={onPickLibrary}
+          onToggle={onToggle}
+          onLock={onLock}
+        />
+      </div>
+
+      {expanded ? (
+        <div className="border-t border-[#184b52]/12 bg-[#f8eddc]/45 px-4 py-5">
+          <div className="grid gap-3 lg:grid-cols-3">
+            <EditableField
+              label="NAME"
+              value={character.name}
+              onChange={(value) => onUpdate({ name: value, status: "已编辑" })}
+            />
+            <EditableField
+              label="ROLE"
+              value={character.role}
+              onChange={(value) => onUpdate({ role: value, status: "已编辑" })}
+            />
+            <EditableField
+              label="AGE"
+              value={character.age}
+              onChange={(value) => onUpdate({ age: value, status: "已编辑" })}
+            />
+            <EditableField
+              label="PERSONALITY"
+              value={character.archetype}
+              onChange={(value) => onUpdate({ archetype: value, status: "已编辑" })}
+            />
+            <EditableField
+              label="LOOK"
+              value={character.visualStyle}
+              multiline
+              className="lg:col-span-2"
+              onChange={(value) => onUpdate({ visualStyle: value, status: "已编辑" })}
+            />
+            <PromptScriptCard
+              value={prompt}
+              onChange={(value) => onUpdate({ portraitPrompt: value, status: "已编辑" })}
+            />
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function SceneAssetRow({
+  scene,
+  index,
+  expanded,
+  onToggle,
+  onUpdate,
+  onGenerateImage,
+  onLocalUpload,
+  onPickLibrary,
+  onLock,
+}: {
+  scene: SceneState;
+  index: number;
+  expanded: boolean;
+  onToggle: () => void;
+  onUpdate: (patch: Partial<SceneAsset>) => void;
+  onGenerateImage: () => void;
+  onLocalUpload: () => void;
+  onPickLibrary: () => void;
+  onLock: () => void;
+}) {
+  return (
+    <div className={`bg-[#fffaf0]/70 transition ${scene.status === "已锁定" ? "bg-[#f5f0df]" : ""}`}>
+      <div className="grid gap-4 px-4 py-4 lg:grid-cols-[96px_minmax(0,1fr)_auto] lg:items-center">
+        <Thumbnail
+          label={assetImageLabel(scene.name, scene.imageState, scene.imageStatus)}
+          variant={scene.imageState === "local" ? "green" : "slate"}
+        />
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f28c6a]">
+              SCENE {String(index + 1).padStart(2, "0")}
+            </span>
+            <Badge tone={statusTone(scene.status)}>{scene.status}</Badge>
+            <Badge tone="neutral">{scene.source}</Badge>
+          </div>
+          <h3 className="cn-title mt-2 text-lg">{scene.name}</h3>
+          <p className="body-copy mt-2 line-clamp-2">{scene.description}</p>
+        </div>
+        <RowActions
+          generating={scene.status === "生成中" || scene.imageStatus === "生成中"}
+          generateLabel="AI 生成场景图"
+          editLabel={expanded ? "收起" : "编辑"}
+          onGenerate={onGenerateImage}
+          onLocalUpload={onLocalUpload}
+          onPickLibrary={onPickLibrary}
+          onToggle={onToggle}
+          onLock={onLock}
+        />
+      </div>
+
+      {expanded ? (
+        <div className="border-t border-[#184b52]/12 bg-[#f8eddc]/45 px-4 py-5">
+          <div className="grid gap-3 lg:grid-cols-2">
+            <EditableField
+              label="SCENE NAME"
+              value={scene.name}
+              onChange={(value) => onUpdate({ name: value, status: "已编辑" })}
+            />
+            <EditableField
+              label="DESCRIPTION"
+              value={scene.description}
+              multiline
+              onChange={(value) => onUpdate({ description: value, status: "已编辑" })}
+            />
+            <PromptScriptCard
+              value={scene.visualPrompt}
+              onChange={(value) => onUpdate({ visualPrompt: value, status: "已编辑" })}
+            />
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function RowActions({
+  generating,
+  generateLabel,
+  editLabel,
+  onGenerate,
+  onLocalUpload,
+  onPickLibrary,
+  onToggle,
+  onLock,
+}: {
+  generating: boolean;
+  generateLabel: string;
+  editLabel: string;
+  onGenerate: () => void;
+  onLocalUpload: () => void;
+  onPickLibrary: () => void;
+  onToggle: () => void;
+  onLock: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2 lg:max-w-[360px] lg:justify-end">
+      <AssetButton primary onClick={onGenerate}>
+        {generating ? "生成中..." : generateLabel}
+      </AssetButton>
+      <AssetButton onClick={onLocalUpload}>本地上传</AssetButton>
+      <AssetButton onClick={onPickLibrary}>从资产库引用</AssetButton>
+      <AssetButton onClick={onToggle}>{editLabel}</AssetButton>
+      <AssetButton onClick={onLock}>锁定</AssetButton>
+    </div>
+  );
+}
+
+function Thumbnail({
+  label,
+  variant,
+}: {
+  label: string;
+  variant: "blue" | "green" | "amber" | "slate";
+}) {
+  return (
+    <div className="w-24 rounded-lg border border-[#184b52]/15 bg-[#fff7ea] p-2 shadow-sm">
+      <AssetPlaceholder label={label} variant={variant} />
+    </div>
+  );
+}
+
+function EditableField({
   label,
   value,
   onChange,
-  wide = false,
   multiline = false,
+  className = "",
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  wide?: boolean;
   multiline?: boolean;
+  className?: string;
 }) {
   return (
-    <div className={`rounded-md border border-[#184b52]/12 bg-[#fff7ea]/45 px-3 py-2 ${wide ? "md:col-span-2" : ""}`}>
-      <p className="meta-text">{label}</p>
+    <label className={`block rounded-md border border-[#184b52]/12 bg-[#fff7ea]/70 px-3 py-2 ${className}`}>
+      <span className="meta-text">{label}</span>
       {multiline ? (
         <textarea
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="body-copy mt-1 min-h-16 w-full resize-none rounded-md border border-transparent bg-transparent p-0 outline-none focus:border-[#f28c6a]/50 focus:bg-[#fff7ea]/70"
+          className="body-copy mt-1 min-h-20 w-full resize-none rounded-md border border-transparent bg-transparent p-0 outline-none focus:border-[#f28c6a]/50 focus:bg-[#fff7ea]/80"
         />
       ) : (
         <input
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="body-copy mt-1 h-7 w-full rounded-md border border-transparent bg-transparent p-0 outline-none focus:border-[#f28c6a]/50 focus:bg-[#fff7ea]/70"
+          className="body-copy mt-1 h-8 w-full rounded-md border border-transparent bg-transparent p-0 outline-none focus:border-[#f28c6a]/50 focus:bg-[#fff7ea]/80"
         />
       )}
-    </div>
+    </label>
   );
 }
 
-function MetaItem({
-  label,
+function PromptScriptCard({
   value,
-  wide = false,
+  onChange,
 }: {
-  label: string;
   value: string;
-  wide?: boolean;
+  onChange: (value: string) => void;
 }) {
   return (
-    <div className={`rounded-md border border-[#184b52]/12 bg-[#fff7ea]/45 px-3 py-2 ${wide ? "md:col-span-2" : ""}`}>
-      <p className="meta-text">{label}</p>
-      <p className="body-copy mt-1 text-sm leading-6">{value}</p>
+    <label className="block rounded-lg border border-[#184b52]/18 bg-[#fff7ea] p-3 shadow-sm lg:col-span-full">
+      <span className="section-kicker">VISUAL PROMPT</span>
+      <textarea
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="prompt-text mt-3 min-h-28 w-full resize-y rounded-md border border-[#184b52]/12 bg-[#f9efdf] p-3 leading-7 text-[#173f47] outline-none transition focus:border-[#f28c6a]/70 focus:bg-[#fffaf0]"
+      />
+    </label>
+  );
+}
+
+function CompactMockGrid<T extends PropAsset | StyleAsset>({
+  kicker,
+  items,
+  renderMeta,
+}: {
+  kicker: string;
+  items: T[];
+  renderMeta: (item: T) => string;
+}) {
+  return (
+    <Panel className="p-4">
+      <p className="section-kicker">{kicker}</p>
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        {items.map((item, index) => (
+          <div
+            key={item.id}
+            className="rounded-lg border border-[#184b52]/12 bg-[#fffaf0]/70 p-4 transition hover:-translate-y-0.5 hover:border-[#f28c6a]/45"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <span className="font-mono text-xl font-semibold tracking-[0.14em] text-[#f28c6a]">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <Badge tone="neutral">{renderMeta(item)}</Badge>
+            </div>
+            <h3 className="cn-title mt-3 text-lg">{item.name}</h3>
+            <p className="body-copy mt-2">{item.description}</p>
+            <p className="prompt-text mt-3 rounded-md border border-[#184b52]/12 bg-[#f9efdf] p-3">
+              {item.visualPrompt}
+            </p>
+          </div>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
+function AssetPickerModal({
+  kind,
+  assets,
+  onChoose,
+  onClose,
+}: {
+  kind: "character" | "scene";
+  assets: Array<{ id: string; name: string; prompt: string }>;
+  onChoose: (prompt: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#173f47]/35 p-4">
+      <Panel className="w-full max-w-2xl p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="section-kicker">ASSET LIBRARY REFERENCE</p>
+            <h2 className="cn-title mt-2 text-xl">
+              {kind === "character" ? "选择角色资产" : "选择场景资产"}
+            </h2>
+            <p className="body-copy mt-1">
+              当前为 mock 选择面板，选择后会写入本地草稿并关闭弹窗。
+            </p>
+          </div>
+          <button type="button" onClick={onClose} className="tool-btn">
+            关闭
+          </button>
+        </div>
+        <div className="mt-5 grid gap-3">
+          {assets.map((asset, index) => (
+            <button
+              key={asset.id}
+              type="button"
+              onClick={() => onChoose(asset.prompt)}
+              className="rounded-lg border border-[#184b52]/12 bg-[#fffaf0] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#f28c6a]/60 hover:shadow-sm"
+            >
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-lg font-semibold tracking-[0.14em] text-[#f28c6a]">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <p className="cn-title text-base">{asset.name}</p>
+              </div>
+              <p className="prompt-text mt-3 rounded-md border border-[#184b52]/12 bg-[#f9efdf] p-3">
+                {asset.prompt}
+              </p>
+            </button>
+          ))}
+        </div>
+      </Panel>
     </div>
   );
 }
@@ -508,4 +736,27 @@ function AssetButton({
       {children}
     </button>
   );
+}
+
+function statusTone(status: AssetStatus): "neutral" | "blue" | "green" | "amber" | "red" {
+  if (status === "已锁定") return "green";
+  if (status === "生成中") return "blue";
+  if (status === "缺少设定图") return "red";
+  if (status === "已编辑") return "amber";
+  return "neutral";
+}
+
+function assetImageLabel(
+  name: string,
+  imageState: "ai" | "local" | "library" | "missing",
+  imageStatus?: "未生成" | "生成中" | "已生成" | "失败",
+) {
+  if (imageStatus === "生成中") return "生成中...";
+  if (imageStatus === "已生成" && imageState === "local") return "本地上传";
+  if (imageStatus === "已生成" && imageState === "library") return "资产库引用";
+  if (imageStatus === "已生成") return "Mock 设定图";
+  if (imageState === "missing") return "缺少设定图";
+  if (imageState === "local") return "本地上传";
+  if (imageState === "library") return "资产库引用";
+  return name;
 }

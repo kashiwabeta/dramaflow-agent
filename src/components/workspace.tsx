@@ -218,7 +218,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 export function StepBar({ current }: { current: 1 | 2 | 3 }) {
   const steps = [
     { zh: "剧本大纲", en: "SCRIPT OUTLINE" },
-    { zh: "角色与场景", en: "CHARACTER SCENE" },
+    { zh: "角色与场景", en: "CHARACTER / SCENE" },
     { zh: "分集视频", en: "EPISODE PLAN" },
   ];
   return (

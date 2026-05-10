@@ -15,7 +15,7 @@ export type CharacterAsset = {
 
 export type AssetSource = "AI 生成" | "本地上传" | "资产库引用" | "从资产库引用" | "角色资产库" | "场景资产库";
 
-export type AssetStatus = "待确认" | "已编辑" | "已锁定" | "缺少设定图";
+export type AssetStatus = "待确认" | "生成中" | "已编辑" | "已锁定" | "缺少设定图";
 
 export type MockGenerationStatus = "未生成" | "生成中" | "已生成" | "失败";
 
